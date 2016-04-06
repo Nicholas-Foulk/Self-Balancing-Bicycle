@@ -57,7 +57,6 @@ int main(void) {
     	ACC_Data[1] = readSPI(0x29);
     	printf("ACC_Data[1] > %x\n", ACC_Data[1]);
 
-
     	ACC_Data[2] = readSPI(0x2A);
     	printf("ACC_Data[2] > %x\n", ACC_Data[2]);
 
@@ -88,20 +87,26 @@ void SPI_init(){
     LPC_SC -> PCLKSEL0 |= (1 << 17);
 
     //Configure P0.15 to SPI CLK pin
-    LPC_PINCON -> PINSEL0 |= 1 << 31 | 1 << 30;
-
+    LPC_PINCON -> PINSEL0 &= (0 << 14 & 0 << 15); //reseting bits 14 and 15
+   // LPC_PINCON -> PINSEL0 |= (1 << 14 & 0 << 15); //setting port 0.6 to 2
+    LPC_PINCON -> PINSEL0 |= (2 << 14);
     //Configure P0.16 to SSEL
     //LPC_PINCON -> PINSEL1 |= 1 << 1 | 1 << 0;
 
     //Configure P0.17 to MISO
-    LPC_PINCON -> PINSEL1 |= 1 << 2 | 1 << 3;
+    //LPC_PINCON -> PINSEL1 |= 1 << 2 | 1 << 3;
+    LPC_PINCON -> PINSEL0 &= (0 << 14 & 0 <<15);  //P0.8
+    LPC_PINCON -> PINSEL0 |= (2 << 14);
 
     //Configure P0.18 to MOSI
-    LPC_PINCON -> PINSEL1 |= 1 << 5 | 1 << 4;
+    //LPC_PINCON -> PINSEL1 |= 1 << 5 | 1 << 4;
+    LPC_PINCON -> PINSEL0 &= (0 << 18 & 0 << 19);
+    LPC_PINCON -> PINSEL0 |= (2 << 18);   //P0.9
 
     //PULL DOWN
-    LPC_PINCON -> PINMODE0 |= 0x3 << 30;
-    LPC_PINCON -> PINMODE1 |= (0x3) | (0x3 << 2) | (0x3<<4);
+    //we are skipping over this 6:28 PM Tuesday
+   // LPC_PINCON -> PINMODE0 |= 0x3 << 30;
+    //LPC_PINCON -> PINMODE1 |= (0x3) | (0x3 << 2) | (0x3<<4);
 
     //SPI work on Master Mode
     LPC_SPI -> SPCR = 0x30;
