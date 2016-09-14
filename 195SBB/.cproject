@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.toolchain.gnu.mingw.base.2076290009">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.mingw.base.2076290009" moduleId="org.eclipse.cdt.core.settings" name="Default">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.PE" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration buildProperties="" id="cdt.managedbuild.toolchain.gnu.mingw.base.2076290009" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="cdt.managedbuild.toolchain.gnu.mingw.base.2076290009.1356438724" name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.base.407129306" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.base">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.PE" id="cdt.managedbuild.target.gnu.platform.mingw.base.470257641" name="Debug Platform" osList="win32" superClass="cdt.managedbuild.target.gnu.platform.mingw.base"/>
+							<builder buildPath="${workspace_loc:/195SBB}/Default" id="cdt.managedbuild.tool.gnu.builder.mingw.base.780529842" managedBuildOn="false" name="CDT Internal Builder.Default" superClass="cdt.managedbuild.tool.gnu.builder.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.mingw.base.637697069" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.mingw.base.511605689" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.1825545255" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.base.658706968" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.1394774121" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.25594354" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base"/>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652;org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652.;org.eclipse.cdt.cross.arm.gnu.windows.elf.cpp.compiler.release.1095233171;org.eclipse.cdt.cross.arm.gnu.windows.cpp.compiler.base.input.1043249607">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717;org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717.;org.eclipse.cdt.cross.arm.gnu.windows.elf.assembler.debug.1279343730;org.eclipse.cdt.cross.arm.gnu.windows.assembler.base.input.461945496">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.1987578660;ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.1987578660.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1110595610;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.2050870165">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.2048000695;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.2048000695.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.787943826;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1741126483">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652;org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652.;org.eclipse.cdt.cross.arm.gnu.windows.elf.assembler.release.588538478;org.eclipse.cdt.cross.arm.gnu.windows.assembler.base.input.1021850180">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717;org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717.;org.eclipse.cdt.cross.arm.gnu.windows.elf.c.compiler.debug.994636162;org.eclipse.cdt.cross.arm.gnu.windows.c.compiler.base.input.1185229898">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652;org.eclipse.cdt.cross.arm.gnu.windows.elf.release.1646942652.;org.eclipse.cdt.cross.arm.gnu.windows.elf.c.compiler.release.973628061;org.eclipse.cdt.cross.arm.gnu.windows.c.compiler.base.input.170431532">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717;org.eclipse.cdt.cross.arm.gnu.windows.elf.debug.2021928717.;org.eclipse.cdt.cross.arm.gnu.windows.elf.cpp.compiler.debug.1225627368;org.eclipse.cdt.cross.arm.gnu.windows.cpp.compiler.base.input.1644142609">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.cross.arm.gnu.ARM_GCCWinManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.1987578660;ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.1987578660.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1015572248;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1130823891">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.2048000695;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.2048000695.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.147170095;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1326595176">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="195SBB.null.427814950" name="195SBB"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+</cproject>
