@@ -10,6 +10,8 @@
 
 #ifdef __USE_CMSIS
 #include "LPC17xx.h"
+#include "math.h"
+
 #endif
 
 #include <cr_section_macros.h>
@@ -31,10 +33,12 @@ int is_Rx_full();
 int is_Rx_not_empty();
 int is_busy();
 void sleep_us (int us);
+void init_PWM(uint32_t PWMinval, uint32_t speed);
 
 int main(void) {
 
 	int j;
+	LPC_GPIO2 -> FIODIR |= 1 << 11; //direction initialization
 
 	SSP_init();
 
@@ -55,6 +59,8 @@ int main(void) {
 	printf("CTRL6 > %x\n", SSPReceive(0x25));
 
 	int16_t accX, accY, accZ;
+	int16_t oldy=1400;
+	int16_t result=0;
 	uint8_t ACC_Data[6];
 
 	// Force the counter to be placed into memory
@@ -63,23 +69,23 @@ int main(void) {
 	while(1) {
 //		for(i=0;i<100;i++);
 		ACC_Data[0] = SSPReceive(0x28);
-		printf("ACC_Data[0] > %x\n", ACC_Data[0]);
+//		printf("ACC_Data[0] > %x\n", ACC_Data[0]);
 
 		ACC_Data[1] = SSPReceive(0x29);
-		printf("ACC_Data[1] > %x\n", ACC_Data[1]);
+//		printf("ACC_Data[1] > %x\n", ACC_Data[1]);
 
 		ACC_Data[2] = SSPReceive(0x2A);
-		printf("ACC_Data[2] > %x\n", ACC_Data[2]);
+//		printf("ACC_Data[2] > %x\n", ACC_Data[2]);
 
 		ACC_Data[3] = SSPReceive(0x2B);
-		printf("ACC_Data[3] > %x\n", ACC_Data[3]);
+//		printf("ACC_Data[3] > %x\n", ACC_Data[3]);
 
 
 		ACC_Data[4] = SSPReceive(0x2C);
-		printf("ACC_Data[4] > %x\n", ACC_Data[4]);
+//		printf("ACC_Data[4] > %x\n", ACC_Data[4]);
 
 		ACC_Data[5] = SSPReceive(0x2D);
-		printf("ACC_Data[5] > %x\n", ACC_Data[5]);
+//		printf("ACC_Data[5] > %x\n", ACC_Data[5]);
 
 //		ACC_Data[0] = ~ACC_Data[0];
 //		ACC_Data[1] = ~ACC_Data[1];
@@ -96,49 +102,27 @@ int main(void) {
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		printf("accX > %d\n", accX);
-		printf("accY > %d\n", accY);
+		printf("accX > %d ", accX);
+		printf("accY > %d ", accY);
 		printf("accZ > %d\n", accZ);
 
-		int z=100;
-		int j=1;
-		LPC_GPIO2 -> FIODIR |= 1 << 11; //direction initialization
-		LPC_GPIO2 -> FIODIR |= 1 << 12; //pulse initialization
+		result=accY-oldy;
+		if(abs(result)>1000){
 			if(accY>0){
-					  	  LPC_GPIO2 -> FIOCLR |= 1 << 11;
-					  	  sleep_us(10);
-					  	  while(z>0){
-					  		j=!j;
-					  		   		 if(j==1){
-					  		        	LPC_GPIO2 -> FIOPIN |= 1 << 12;
-					  		        	sleep_us (1);
-					  		   		 }
-
-					  		   		 if(j==0){
-					  		        	LPC_GPIO2 -> FIOCLR |= 1 << 12;
-					  		            sleep_us(4);
-					  		   		 }
-					  		   		 z--;
-					  	  }
+				LPC_GPIO2 -> FIOSET |= 1 << 11;
+				init_PWM(500,3000);
+				sleep_us(1000);
+				init_PWM(0,2000);
 
 			}
-			else {
-						  LPC_GPIO2 -> FIOSET |= 1 << 11;
-						  sleep_us(10);
-						  while(z>0){
-						  	j=!j;
-						  			 if(j==1){
-						  		       LPC_GPIO2 -> FIOPIN |= 1 << 12;
-						  				sleep_us (1);
-						  					  		   		 }
+			else{
+				LPC_GPIO2 -> FIOCLR |= 1 << 11;
+				init_PWM(500,3000);
+				sleep_us(1000);
+				init_PWM(0,2000);
+			}
+		}
 
-						  			if(j==0){
-						  			   LPC_GPIO2 -> FIOCLR |= 1 << 12;
-						  			  sleep_us(4);
-						  			}
-						  			z--;
-						  }
-						}
 				}
 
 
@@ -320,3 +304,27 @@ void sleep_us (int us){
     return 0;
 }
 
+void init_PWM(uint32_t PWMinval, uint32_t speed)
+{
+	//Power for PWM1, sets 6th bit of PCONP register to 1 which is PWM1;
+		//PCONP register is peripheral power control register
+		LPC_SC->PCONP |= (1 << 6);
+		//peripheral clock select for PWM cclk/8
+		LPC_SC->PCLKSEL0 |= ((1 << 13) | (1 << 12));
+		//pin select
+		LPC_PINCON->PINSEL4 |= (0x1<<0); //sets 01 for bits [1:0] of PINSEL4 register, which sets P2.0 to PWM1.1 operation
+
+		LPC_PWM1->TCR = (1<<1);   	//counter reset, set 2nd bit of TCR register to 1;
+		LPC_PWM1->PR = 0;        //count frequency, prescale register
+		LPC_PWM1->PC = 0;		//prescale counter
+		LPC_PWM1->MCR = (1 << 1); //reset TC on Match 0
+		//set period & duty cycle
+		LPC_PWM1->MR0 = speed;	  //set PWM period/cycle to 1khz
+		LPC_PWM1->MR1 = PWMinval;	  //set 50% duty cycle; period/2
+		//write enable for match registers
+		LPC_PWM1->LER = (1<<0)|(1<<1); //latch MR0 and MR1 (must be used for those registers to be overwritten)
+		//pwm enable, settings
+		LPC_PWM1->PCR = (1<<9);   //PWM output enable, single-edged operation, must be set else otherwise PWM is a counter
+		LPC_PWM1->TCR = (1<<0) | (1<<3); //TC enable, PWM enable
+
+}
