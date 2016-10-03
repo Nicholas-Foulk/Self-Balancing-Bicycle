@@ -107,23 +107,55 @@ int main(void) {
 		printf("accZ > %d\n", accZ);
 
 		result=accY-oldy;
-		if(abs(result)>1000){
-			if(accY>0){
-				LPC_GPIO2 -> FIOSET |= 1 << 11;
-				init_PWM(500,3000);
+		if(abs(result) > 1000)
+		{
+			int steppermotor = 0;
+			while(accY > 3900 /*&& 0 < steppermotor < 100*/)
+			//if (accY > 0)
+			{
+				LPC_GPIO2 -> FIOSET |= 1 << 11; //this is left I think
+				init_PWM(500,1000);
 				sleep_us(1000);
 				init_PWM(0,2000);
-
+				ACC_Data[3] = SSPReceive(0x2B);
+				ACC_Data[2] = SSPReceive(0x2A);
+				accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+				steppermotor++;
 			}
-			else{
-				LPC_GPIO2 -> FIOCLR |= 1 << 11;
-				init_PWM(500,3000);
+
+			while(accY < -1100 /*&& 0 > steppermotor > -100*/)
+			//else
+			{
+				LPC_GPIO2 -> FIOCLR |= 1 << 11; //this is right I think
+				init_PWM(500,1000);
 				sleep_us(1000);
 				init_PWM(0,2000);
+				ACC_Data[3] = SSPReceive(0x2B);
+				ACC_Data[2] = SSPReceive(0x2A);
+				accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+				//steppermotor--;
 			}
-		}
+			/*if (steppermotor != 0)
+			{
+				while(steppermotor > 0)
+				{
 
+					steppermotor--;
+					init_PWM(500,1000);
+					sleep_us(1000);
+					init_PWM(0,2000);
 				}
+				while(steppermotor < 0)
+				{
+
+					steppermotor++;
+					init_PWM(500,1000);
+					sleep_us(1000);
+					init_PWM(0,2000);
+				}
+			} */
+		}
+	}
 
 
     return 0;
