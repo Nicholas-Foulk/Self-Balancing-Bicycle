@@ -66,7 +66,9 @@ int main(void) {
 	// Force the counter to be placed into memory
 	volatile static int i = 0 ;
 	// Enter an infinite loop, just incrementing a counter
-	while(1) {
+	int steppermotor = 0;
+	while(1)
+	{
 //		for(i=0;i<100;i++);
 		ACC_Data[0] = SSPReceive(0x28);
 //		printf("ACC_Data[0] > %x\n", ACC_Data[0]);
@@ -102,61 +104,66 @@ int main(void) {
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		printf("accX > %d ", accX);
-		printf("accY > %d ", accY);
-		printf("accZ > %d\n", accZ);
+		//printf("accX > %d ", accX);
+		//printf("accY > %d ", accY);
+		//printf("accZ > %d\n", accZ);
 
 		result=accY-oldy;
+		init_PWM(0,10000);
 		if(abs(result) > 1000)
 		{
-			int steppermotor = 0;
-			while(accY > 3900 )
+			while(accY > 3900)
 			{
 				//If the bicycle is tipping to the right, we want the motor to constantly spin counterclockwise for
 				//counter weight until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor <= 100)
+				if(steppermotor < 2) //this limit is arbitrary
 				{
+					++steppermotor;
 					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(25,10000); //the higher the frequency the slower the motor turns
-					sleep_us(500);
-					init_PWM(0,10000); //the left number in init_PWM is duty cycle and the right is frequency
+					init_PWM(50,10000); //the higher the frequency the slower the motor turns
+					sleep_us(1);
+					init_PWM(50,10000); //the left number in init_PWM is duty cycle and the right is frequency
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+					printf("steppermotor: %d\n", steppermotor);
 					printf("accX > %d ", accX);
 					printf("accY > %d ", accY);
 					printf("accZ > %d\n", accZ);
 				}
 				else
 				{
+					init_PWM(0,10000);
 					//We still want the data from the accelerometer to print out
 					ACC_Data[3] = SSPReceive(0x2B);
-					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+					printf("steppermotor: %d\n", steppermotor);
 					printf("accX > %d ", accX);
 					printf("accY > %d ", accY);
 					printf("accZ > %d\n", accZ);
 				}
-				steppermotor++;
 			}
 			//The reason we don't reset steppermotor variable is because if the pendulum system is tipping left,
 			//we have to go more than 100 steps to hit out limit on the left.
-			while(accY < -1100 )
+			while(accY < -1100)
 			{
 				//If the bicycle is tipping to the left, we want the motor to constantly spin clockwise for counter weight
 				//until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor > -100)
+
+				if(steppermotor > -2)
 				{
+					--steppermotor;
 					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
 					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(25,10000);   //the higher the frequency the slower the motor turns
-					sleep_us(500); //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(0,10000);
+					init_PWM(50,10000);   //the higher the frequency the slower the motor turns
+					sleep_us(1); //we sleep a given amount of time to make sure the program doesn't change anything for that time
+					init_PWM(50,10000);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+					printf("steppermotor: %d\n", steppermotor);
 					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
 					printf("accY > %d ", accY);
 					printf("accZ > %d\n", accZ);
@@ -164,14 +171,15 @@ int main(void) {
 				else
 				{
 					//We still want the data from the accelerometer to print out
+					init_PWM(0,10000);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+					printf("steppermotor: %d\n", steppermotor);
 					printf("accX > %d ", accX);
 					printf("accY > %d ", accY);
 					printf("accZ > %d\n", accZ);
 				}
-				steppermotor--;
 			}
 		}
 	}
