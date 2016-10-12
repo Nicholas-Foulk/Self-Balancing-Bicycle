@@ -49,10 +49,12 @@
 
 /* The task functions. */
 void vTask1( void *pvParameters );
-void vTask2( void *pvParameters );
 void vTask3( void *pvParameters );
+void vTask4( void *pvParameters );
 
 /*Added functions from Control Algorithm Section*/
+
+uint8_t read(void);
 void SSP_init();
 //void SSPSend(uint8_t address, uint8_t *buf, uint32_t length);
 //void SSPReceive(uint8_t address, uint8_t *buf, uint32_t length);
@@ -65,8 +67,9 @@ int is_Rx_full();
 int is_Rx_not_empty();
 int is_busy();
 void sleep_us (int us);
-void init_PWM(uint32_t PWMinval, uint32_t speed);
-/*-----------------------------------------------------------*/
+void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed);
+
+/*-------------------------- ---------------------------------*/
 
 int main( void )
 {
@@ -85,6 +88,7 @@ int main( void )
 	//xTaskCreate( vTask2, "Task 2", 240, NULL, 1, NULL );
 
 	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
+	xTaskCreate( vTask4, "Task 4", 240, NULL, 1, NULL );
 
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
@@ -100,28 +104,6 @@ int main( void )
 void vTask1( void *pvParameters )
 {
 const char *pcTaskName = "Task 1 is running\n";
-volatile unsigned long ul;
-
-	/* As per most tasks, this task is implemented in an infinite loop. */
-	for( ;; )
-	{
-		/* Print out the name of this task. */
-		vPrintString( pcTaskName );
-
-		/* Delay for a period. */
-		for( ul = 0; ul < mainDELAY_LOOP_COUNT; ul++ )
-		{
-			/* This loop is just a very crude delay implementation.  There is
-			nothing to do in here.  Later exercises will replace this crude
-			loop with a proper delay/sleep function. */
-		}
-	}
-}
-/*-----------------------------------------------------------*/
-
-void vTask2( void *pvParameters )
-{
-const char *pcTaskName = "Task 2 is running\n";
 volatile unsigned long ul;
 
 	/* As per most tasks, this task is implemented in an infinite loop. */
@@ -184,7 +166,7 @@ void vTask3( void *pvParameters )
 		//printf("accZ > %d\n", accZ);
 
 		result=accY-oldy;
-		init_PWM(0,10000);
+		init_PWM(0,0,10000);
 		if(abs(result) > 1000)
 		{
 			while(accY > 3600)
@@ -196,9 +178,9 @@ void vTask3( void *pvParameters )
 				{
 					++steppermotor;
 					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(50,10000); //the higher the frequency the slower the motor turns
+					init_PWM(0,50,10000); //the higher the frequency the slower the motor turns
 					sleep_us(1);
-					init_PWM(50,10000); //the left number in init_PWM is duty cycle and the right is frequency
+					init_PWM(0,50,10000); //the left number in init_PWM is duty cycle and the right is frequency
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -209,7 +191,7 @@ void vTask3( void *pvParameters )
 				}
 				else
 				{
-					init_PWM(0,10000);
+					init_PWM(0,0,10000);
 					//We still want the data from the accelerometer to print out
 					ACC_Data[3] = SSPReceive(0x2B);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -231,9 +213,9 @@ void vTask3( void *pvParameters )
 					--steppermotor;
 					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
 					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(50,10000);   //the higher the frequency the slower the motor turns
+					init_PWM(0,50,10000);   //the higher the frequency the slower the motor turns
 					sleep_us(1); //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(50,10000);
+					init_PWM(0,50,10000);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -245,7 +227,7 @@ void vTask3( void *pvParameters )
 				else
 				{
 					//We still want the data from the accelerometer to print out
-					init_PWM(0,10000);
+					init_PWM(0,0,10000);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -264,9 +246,9 @@ void vTask3( void *pvParameters )
 					--steppermotor;
 					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
 					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(50,10000);   //the higher the frequency the slower the motor turns
+					init_PWM(0,50,10000);   //the higher the frequency the slower the motor turns
 					sleep_us(1); //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(50,10000);
+					init_PWM(0,50,10000);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -279,9 +261,9 @@ void vTask3( void *pvParameters )
 				{
 					++steppermotor;
 					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(50,10000); //the higher the frequency the slower the motor turns
+					init_PWM(0,50,10000); //the higher the frequency the slower the motor turns
 					sleep_us(1);
-					init_PWM(50,10000); //the left number in init_PWM is duty cycle and the right is frequency
+					init_PWM(0,50,10000); //the left number in init_PWM is duty cycle and the right is frequency
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -295,8 +277,98 @@ void vTask3( void *pvParameters )
 	}
 	return;
 }
+int mtr = 0;
 /*-----------------------------------------------------------*/
+void vTask4( void *pvParameters )
+{
 
+	LPC_SC->PCONP |= 1<<24;
+	LPC_SC->PCLKSEL1 &= ~(3<<16);
+	LPC_SC->PCLKSEL1 |= 1<<16;
+	uint16_t DL = SystemCoreClock / (16*38400);
+	LPC_UART2->LCR |= 1<<7;
+	LPC_UART2->DLL = DL&(0xFF);
+	LPC_UART2->DLM = DL>>8;
+	//Disable FIFO
+	LPC_UART2->FCR &= 0;
+
+	//Set 8-bit exchange
+	LPC_UART2->LCR &= ~(3);
+	LPC_UART2->LCR |= 3;
+
+	LPC_PINCON->PINSEL0 &= ~(15<<20);
+	LPC_PINCON->PINSEL0 |= 15<<20;
+	//LPC_PINCON->PINSEL9 (0x0F00_0000)
+	//DLAB = 0
+	LPC_UART2->LCR &= ~(1<<7);
+	//disable the divisor latch
+
+	//GPIO Init
+ 	LPC_PINCON->PINSEL3 &= ~(0x3<<14);
+	LPC_PINCON->PINSEL3 &= ~(0x15<<24);
+
+	LPC_GPIO1->FIODIR |= 0x1<<23;
+	LPC_GPIO1->FIODIR |= 0x3<<28;
+
+	while(1)
+	{
+		uint8_t char_in;
+		//PWM motor_adj(PWM::pwm1,100);
+		init_PWM(1,50,100); //the higher the frequency the slower the motor turns
+		char_in = read();
+		printf("Read: %c, %i\n", char_in, mtr);
+		if(char_in == 'M')
+		{
+			LPC_GPIO1->FIOSET |= 1<<23;
+
+		}
+		if(char_in == 'C')
+		{
+			LPC_GPIO1->FIOCLR |= 1<<23;
+		}
+		if(char_in == 'L')
+		{
+			if(mtr > -45)
+			{
+				mtr=mtr-1;
+				LPC_GPIO1->FIOCLR |= 1<<29;
+				int m;
+				for(m = 0; m < 5; m=m+1)
+				{
+					LPC_GPIO1->FIOCLR |= 1<<28;
+					vTaskDelay(1);
+					LPC_GPIO1->FIOSET |= 1<<28;
+					vTaskDelay(1);
+				}
+			}
+		}
+		else if(char_in == 'R')
+		{
+			if(mtr < 45)
+			{
+				mtr=mtr+1;
+				LPC_GPIO1->FIOSET |= 1<<29;
+				int d;
+				for(d = 0; d < 5; d = d+1)
+				{
+					LPC_GPIO1->FIOCLR |= 1<<28;
+					vTaskDelay(1);
+					LPC_GPIO1->FIOSET |= 1<<28;
+					vTaskDelay(1);
+				}
+			}
+		}
+	}
+
+}
+
+uint8_t read(void)
+{
+  while(!(LPC_UART2->LSR & 1));
+  return LPC_UART2->RBR;
+}
+
+/*-----------------------------------------------------------*/
 void vApplicationMallocFailedHook( void )
 {
 	/* This function will only be called if an API call to create a task, queue
@@ -506,7 +578,7 @@ void sleep_us (int us)
     return 0;
 }
 
-void init_PWM(uint32_t PWMinval, uint32_t speed)
+void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed)
 {
 	//Power for PWM1, sets 6th bit of PCONP register to 1 which is PWM1;
 		//PCONP register is peripheral power control register
@@ -514,8 +586,10 @@ void init_PWM(uint32_t PWMinval, uint32_t speed)
 		//peripheral clock select for PWM cclk/8
 		LPC_SC->PCLKSEL0 |= ((1 << 13) | (1 << 12));
 		//pin select
-		LPC_PINCON->PINSEL4 |= (0x1<<0); //sets 01 for bits [1:0] of PINSEL4 register, which sets P2.0 to PWM1.1 operation
-
+		if(0 < PWM_num < 4)
+		{
+			LPC_PINCON->PINSEL4 |= (0x1<<PWM_num*2); //sets 01 for bits [1:0] of PINSEL4 register, which sets P2.0 to PWM1.1 operation
+		}
 		LPC_PWM1->TCR = (1<<1);   	//counter reset, set 2nd bit of TCR register to 1;
 		LPC_PWM1->PR = 0;        //count frequency, prescale register
 		LPC_PWM1->PC = 0;		//prescale counter
