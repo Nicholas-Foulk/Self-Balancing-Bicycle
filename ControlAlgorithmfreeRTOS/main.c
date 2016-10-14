@@ -287,8 +287,8 @@ void vTask4( void *pvParameters )
 	LPC_SC->PCLKSEL1 |= 1<<16;
 	uint16_t DL = SystemCoreClock / (16*38400);
 	LPC_UART2->LCR |= 1<<7;
-	LPC_UART2->DLL = DL&(0xFF);
-	LPC_UART2->DLM = DL>>8;
+	LPC_UART2->DLL = DL&(0xFF); //lower 8 bits of DL
+	LPC_UART2->DLM = DL>>8; //upper 8 bits of DL
 	//Disable FIFO
 	LPC_UART2->FCR &= 0;
 
@@ -298,66 +298,65 @@ void vTask4( void *pvParameters )
 
 	LPC_PINCON->PINSEL0 &= ~(15<<20);
 	LPC_PINCON->PINSEL0 |= 15<<20;
-	//LPC_PINCON->PINSEL9 (0x0F00_0000)
+
 	//DLAB = 0
 	LPC_UART2->LCR &= ~(1<<7);
 	//disable the divisor latch
 
 	//GPIO Init
- 	LPC_PINCON->PINSEL3 &= ~(0x3<<14);
-	LPC_PINCON->PINSEL3 &= ~(0x15<<24);
+ 	LPC_PINCON->PINSEL1 &= ~(0x63<<14);
 
-	LPC_GPIO1->FIODIR |= 0x1<<23;
-	LPC_GPIO1->FIODIR |= 0x3<<28;
+	LPC_GPIO0->FIODIR |= 0x7<<23;
 
 	while(1)
 	{
 		uint8_t char_in;
+		printf("Your baud rate is %d", DL);
 		//PWM motor_adj(PWM::pwm1,100);
-		init_PWM(1,50,100); //the higher the frequency the slower the motor turns
+		//init_PWM(1,50,100); //the higher the frequency the slower the motor turns
 		char_in = read();
 		printf("Read: %c, %i\n", char_in, mtr);
-		if(char_in == 'M')
-		{
-			LPC_GPIO1->FIOSET |= 1<<23;
+		// if(char_in == 'M')
+		// {
+		// 	LPC_GPIO0->FIOSET |= 1<<23;
 
-		}
-		if(char_in == 'C')
-		{
-			LPC_GPIO1->FIOCLR |= 1<<23;
-		}
-		if(char_in == 'L')
-		{
-			if(mtr > -45)
-			{
-				mtr=mtr-1;
-				LPC_GPIO1->FIOCLR |= 1<<29;
-				int m;
-				for(m = 0; m < 5; m=m+1)
-				{
-					LPC_GPIO1->FIOCLR |= 1<<28;
-					vTaskDelay(1);
-					LPC_GPIO1->FIOSET |= 1<<28;
-					vTaskDelay(1);
-				}
-			}
-		}
-		else if(char_in == 'R')
-		{
-			if(mtr < 45)
-			{
-				mtr=mtr+1;
-				LPC_GPIO1->FIOSET |= 1<<29;
-				int d;
-				for(d = 0; d < 5; d = d+1)
-				{
-					LPC_GPIO1->FIOCLR |= 1<<28;
-					vTaskDelay(1);
-					LPC_GPIO1->FIOSET |= 1<<28;
-					vTaskDelay(1);
-				}
-			}
-		}
+		// }
+		// if(char_in == 'C')
+		// {
+		// 	LPC_GPIO0->FIOCLR |= 1<<23;
+		// }
+		// if(char_in == 'L')
+		// {
+		// 	if(mtr > -45)
+		// 	{
+		// 		mtr=mtr-1;
+		// 		LPC_GPIO0->FIOCLR |= 1<<24;
+		// 		int m;
+		// 		for(m = 0; m < 5; m=m+1)
+		// 		{
+		// 			LPC_GPIO0->FIOCLR |= 1<<25;
+		// 			vTaskDelay(1);
+		// 			LPC_GPIO0->FIOSET |= 1<<25;
+		// 			vTaskDelay(1);
+		// 		}
+		// 	}
+		// }
+		// else if(char_in == 'R')
+		// {
+		// 	if(mtr < 45)
+		// 	{
+		// 		mtr=mtr+1;
+		// 		LPC_GPIO0->FIOSET |= 1<<24;
+		// 		int d;
+		// 		for(d = 0; d < 5; d = d+1)
+		// 		{
+		// 			LPC_GPIO0->FIOCLR |= 1<<25;
+		// 			vTaskDelay(1);
+		// 			LPC_GPIO0->FIOSET |= 1<<25;
+		// 			vTaskDelay(1);
+		// 		}
+		// 	}
+		// }
 	}
 
 }
