@@ -28,14 +28,14 @@ all: ControlAlgorithmfreeRTOS.axf
 ControlAlgorithmfreeRTOS.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -L"C:\Users\nick\Documents\LPCXpresso_7.9.0_455\workspace\CMSISv1p30_LPC17xx\Debug" -L"C:\Users\nick\Documents\LPCXpresso_7.9.0_455\workspace\FreeRTOS_Library\Debug" -Xlinker --gc-sections -Xlinker -Map=ControlAlgorithmfreeRTOS.map -mcpu=cortex-m3 -mthumb -T "ControlAlgorithmfreeRTOS_Debug.ld" -o "ControlAlgorithmfreeRTOS.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -L"C:\Users\Dustin\Documents\Github\CMSISv1p30_LPC17xx\Debug" -L"C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug" -Xlinker --gc-sections -Xlinker -Map=ControlAlgorithmfreeRTOS.map -mcpu=cortex-m3 -mthumb -T "ControlAlgorithmfreeRTOS_Debug.ld" -o "ControlAlgorithmfreeRTOS.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) ControlAlgorithmfreeRTOS.axf
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) ControlAlgorithmfreeRTOS.axf
 	-@echo ' '
 
 post-build:

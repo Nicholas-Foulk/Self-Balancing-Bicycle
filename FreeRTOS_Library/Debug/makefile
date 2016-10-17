@@ -37,7 +37,7 @@ libFreeRTOS_Library.a: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(ARCHIVES) libFreeRTOS_Library.a
+	-$(RM) $(OBJS)$(ARCHIVES)$(C_DEPS) libFreeRTOS_Library.a
 	-@echo ' '
 
 post-build:

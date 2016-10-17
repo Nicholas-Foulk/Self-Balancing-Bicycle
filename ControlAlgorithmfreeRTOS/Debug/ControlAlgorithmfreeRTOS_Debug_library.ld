@@ -5,7 +5,7 @@
  * Generated linker script file for LPC1768
  * Created from library.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.23
- * LPCXpresso v7.9.0 [Build 455] [2015-07-23]  on Oct 11, 2016 1:25:20 PM
+ * LPCXpresso v8.1.2 [Build 603] [2016-03-07]  on Oct 16, 2016 6:14:35 PM
  */
 
 GROUP (

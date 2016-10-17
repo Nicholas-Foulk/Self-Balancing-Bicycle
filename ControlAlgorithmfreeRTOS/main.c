@@ -87,7 +87,7 @@ int main( void )
 	/* Create the other task in exactly the same way. */
 	//xTaskCreate( vTask2, "Task 2", 240, NULL, 1, NULL );
 
-	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
+//	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
 	xTaskCreate( vTask4, "Task 4", 240, NULL, 1, NULL );
 
 	/* Start the scheduler so our tasks start executing. */
@@ -167,7 +167,7 @@ void vTask3( void *pvParameters )
 
 		result=accY-oldy;
 		init_PWM(0,0,10000);
-		if(abs(result) > 1000)
+		if(fabs(result) > 1000)
 		{
 			while(accY > 3600)
 			{
@@ -297,7 +297,7 @@ void vTask4( void *pvParameters )
 	LPC_UART2->LCR |= 3;
 
 	LPC_PINCON->PINSEL0 &= ~(15<<20);
-	LPC_PINCON->PINSEL0 |= 15<<20;
+	LPC_PINCON->PINSEL0 |= 5<<20;
 
 	//DLAB = 0
 	LPC_UART2->LCR &= ~(1<<7);
@@ -311,7 +311,7 @@ void vTask4( void *pvParameters )
 	while(1)
 	{
 		uint8_t char_in;
-		printf("Your baud rate is %d", DL);
+		//printf("Your baud rate is %d", SystemCoreClock/(16*DL));
 		//PWM motor_adj(PWM::pwm1,100);
 		//init_PWM(1,50,100); //the higher the frequency the slower the motor turns
 		char_in = read();
@@ -363,7 +363,8 @@ void vTask4( void *pvParameters )
 
 uint8_t read(void)
 {
-  while(!(LPC_UART2->LSR & 1));
+  while(!(LPC_UART2->LSR & 1))printf("Polling...\n");;
+  printf("Received!\n");
   return LPC_UART2->RBR;
 }
 
@@ -574,7 +575,6 @@ void sleep_us (int us)
             ;    /* Burn cycles. */
         }
     }
-    return 0;
 }
 
 void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed)

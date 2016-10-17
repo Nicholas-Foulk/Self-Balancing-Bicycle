@@ -5,7 +5,7 @@
  * Generated linker script file for LPC1768
  * Created from memory.ldt by FMCreateLinkMemory
  * Using Freemarker v2.3.23
- * LPCXpresso v7.9.0 [Build 455] [2015-07-23]  on Oct 11, 2016 1:25:20 PM
+ * LPCXpresso v8.1.2 [Build 603] [2016-03-07]  on Oct 16, 2016 6:14:35 PM
  */
 
 MEMORY
@@ -17,9 +17,15 @@ MEMORY
 }
 
   /* Define a symbol for the top of each memory region */
+  __base_MFlash512 = 0x0  ; /* MFlash512 */  
+  __base_Flash = 0x0 ; /* Flash */  
   __top_MFlash512 = 0x0 + 0x80000 ; /* 512K bytes */  
   __top_Flash = 0x0 + 0x80000 ; /* 512K bytes */  
+  __base_RamLoc32 = 0x10000000  ; /* RamLoc32 */  
+  __base_RAM = 0x10000000 ; /* RAM */  
   __top_RamLoc32 = 0x10000000 + 0x8000 ; /* 32K bytes */  
   __top_RAM = 0x10000000 + 0x8000 ; /* 32K bytes */  
+  __base_RamAHB32 = 0x2007c000  ; /* RamAHB32 */  
+  __base_RAM2 = 0x2007c000 ; /* RAM2 */  
   __top_RamAHB32 = 0x2007c000 + 0x8000 ; /* 32K bytes */  
   __top_RAM2 = 0x2007c000 + 0x8000 ; /* 32K bytes */  

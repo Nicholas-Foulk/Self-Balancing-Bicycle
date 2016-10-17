@@ -36,7 +36,7 @@ libCMSIS_CORE_LPC17xx.a: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(ARCHIVES) libCMSIS_CORE_LPC17xx.a
+	-$(RM) $(OBJS)$(ARCHIVES)$(C_DEPS) libCMSIS_CORE_LPC17xx.a
 	-@echo ' '
 
 post-build:
