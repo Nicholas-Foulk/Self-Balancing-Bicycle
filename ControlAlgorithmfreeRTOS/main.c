@@ -69,6 +69,10 @@ int is_busy();
 void sleep_us (int us);
 void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed);
 
+/* Defines to make boolean values easier to assign*/
+#define TRUE 1
+#define FALSE 0
+
 /*-------------------------- ---------------------------------*/
 
 int main( void )
@@ -278,6 +282,8 @@ void vTask3( void *pvParameters )
 	return;
 }
 int mtr = 0;
+int spd = 0;
+int on = FALSE;
 /*-----------------------------------------------------------*/
 void vTask4( void *pvParameters )
 {
@@ -303,68 +309,103 @@ void vTask4( void *pvParameters )
 	LPC_UART2->LCR &= ~(1<<7);
 	//disable the divisor latch
 
-	//GPIO Init
+	//GPIO Init 0.23,0.24,0.25
  	LPC_PINCON->PINSEL1 &= ~(0x63<<14);
-
 	LPC_GPIO0->FIODIR |= 0x7<<23;
 
 	while(1)
 	{
 		uint8_t char_in;
 		//printf("Your baud rate is %d", SystemCoreClock/(16*DL));
-		//PWM motor_adj(PWM::pwm1,100);
 		//init_PWM(1,50,100); //the higher the frequency the slower the motor turns
-		char_in = read();
-		printf("Read: %c, %i\n", char_in, mtr);
-		// if(char_in == 'M')
-		// {
-		// 	LPC_GPIO0->FIOSET |= 1<<23;
+       //if(on) motor_adj.set(spd); //Make new function to allow PWM adjustment without re0initalizing
+       //else motor_adj.set(0);
 
-		// }
-		// if(char_in == 'C')
-		// {
-		// 	LPC_GPIO0->FIOCLR |= 1<<23;
-		// }
-		// if(char_in == 'L')
-		// {
-		// 	if(mtr > -45)
-		// 	{
-		// 		mtr=mtr-1;
-		// 		LPC_GPIO0->FIOCLR |= 1<<24;
-		// 		int m;
-		// 		for(m = 0; m < 5; m=m+1)
-		// 		{
-		// 			LPC_GPIO0->FIOCLR |= 1<<25;
-		// 			vTaskDelay(1);
-		// 			LPC_GPIO0->FIOSET |= 1<<25;
-		// 			vTaskDelay(1);
-		// 		}
-		// 	}
-		// }
-		// else if(char_in == 'R')
-		// {
-		// 	if(mtr < 45)
-		// 	{
-		// 		mtr=mtr+1;
-		// 		LPC_GPIO0->FIOSET |= 1<<24;
-		// 		int d;
-		// 		for(d = 0; d < 5; d = d+1)
-		// 		{
-		// 			LPC_GPIO0->FIOCLR |= 1<<25;
-		// 			vTaskDelay(1);
-		// 			LPC_GPIO0->FIOSET |= 1<<25;
-		// 			vTaskDelay(1);
-		// 		}
-		// 	}
-		// }
+       char_in = read();
+
+       if(char_in == 'G')
+       {
+           spd = 60;
+           on = TRUE;
+       }
+       else if(char_in == 'S')
+       {
+           spd = 60;
+           on = FALSE;
+       }
+       else if(char_in == 'U' && on && spd < 100)
+       {
+           spd = spd + 2;
+       }
+       else if(char_in == 'D' && on && spd > 60)
+       {
+           spd = spd - 2;
+       }
+       else if(char_in == 'L')
+       {
+//          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
+//          {
+               mtr=mtr-1;
+               LPC_GPIO1->FIOCLR |= 1<<24;
+               for(int m = 0; m < 5; m++)
+               {
+                   LPC_GPIO0->FIOCLR |= 1<<25;
+                   vTaskDelay(1);
+                   LPC_GPIO0->FIOSET |= 1<<25;
+                   vTaskDelay(1);
+               }
+           //}
+       }
+       else if(char_in == 'R')
+       {
+//          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
+//          {
+               mtr=mtr+1;
+               LPC_GPIO1->FIOSET |= 1<<24;
+               for(int d = 0; d < 5; d++)
+               {
+                   LPC_GPIO0->FIOCLR |= 1<<25;
+                   vTaskDelay(1);
+                   LPC_GPIO0->FIOSET |= 1<<25;
+                   vTaskDelay(1);
+               }
+          // }
+       }
+       else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
+        {
+            mtr = mtr *5;
+            if(mtr < 0)
+            {
+                while(mtr != 0)
+                {
+                    LPC_GPIO1->FIOCLR |= 1<<25;
+                    vTaskDelay(1);
+                    LPC_GPIO1->FIOSET |= 1<<25;
+                    vTaskDelay(1);
+                    mtr++;
+                }
+            }
+            else if (mtr > 0)
+            {
+                while(mtr != 0)
+                {
+                    LPC_GPIO1->FIOSET |= 1<<25;
+                    vTaskDelay(1);
+                    LPC_GPIO1->FIOSET |= 1<<25;
+                    vTaskDelay(1);
+                    mtr--;
+                }
+            }
+	   }
+       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
+        vTaskDelay(10);
 	}
 
 }
 
 uint8_t read(void)
 {
-  while(!(LPC_UART2->LSR & 1))printf("Polling...\n");;
-  printf("Received!\n");
+  while(!(LPC_UART2->LSR & 1));
   return LPC_UART2->RBR;
 }
 
