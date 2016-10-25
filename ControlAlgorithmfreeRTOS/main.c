@@ -33,6 +33,7 @@
 /* FreeRTOS.org includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "PWM.h"
 
 /* Demo includes. */
 #include "basic_io.h"
@@ -67,7 +68,6 @@ int is_Rx_full();
 int is_Rx_not_empty();
 int is_busy();
 void sleep_us (int us);
-void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed);
 
 /* Defines to make boolean values easier to assign*/
 #define TRUE 1
@@ -91,7 +91,7 @@ int main( void )
 	/* Create the other task in exactly the same way. */
 	//xTaskCreate( vTask2, "Task 2", 240, NULL, 1, NULL );
 
-//	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
+	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
 	xTaskCreate( vTask4, "Task 4", 240, NULL, 1, NULL );
 
 	/* Start the scheduler so our tasks start executing. */
@@ -178,20 +178,20 @@ void vTask3( void *pvParameters )
 				//If the bicycle is tipping to the right, we want the motor to constantly spin counterclockwise for
 				//counter weight until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor < 2) //this limit is arbitrary
+				if(steppermotor < 150) //this limit is arbitrary
 				{
 					++steppermotor;
 					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(0,50,10000); //the higher the frequency the slower the motor turns
-					sleep_us(1);
-					init_PWM(0,50,10000); //the left number in init_PWM is duty cycle and the right is frequency
+					init_PWM(0,50,20000); //the higher the frequency the slower the motor turns
+					vTaskDelay(1);
+					init_PWM(0,50,20000); //the left number in init_PWM is duty cycle and the right is frequency
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX);
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX);
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 				else
 				{
@@ -199,10 +199,10 @@ void vTask3( void *pvParameters )
 					//We still want the data from the accelerometer to print out
 					ACC_Data[3] = SSPReceive(0x2B);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX);
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX);
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 			}
 			//The reason we don't reset steppermotor variable is because if the pendulum system is tipping left,
@@ -212,33 +212,33 @@ void vTask3( void *pvParameters )
 				//If the bicycle is tipping to the left, we want the motor to constantly spin clockwise for counter weight
 				//until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor > -2)
+				if(steppermotor > -150)
 				{
 					--steppermotor;
 					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
 					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(0,50,10000);   //the higher the frequency the slower the motor turns
-					sleep_us(1); //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(0,50,10000);
+					init_PWM(0,50,20000);   //the higher the frequency the slower the motor turns
+					vTaskDelay(1);; //we sleep a given amount of time to make sure the program doesn't change anything for that time
+					init_PWM(0,50,20000);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 				else
 				{
 					//We still want the data from the accelerometer to print out
-					init_PWM(0,0,10000);
+					init_PWM(0,0,1000);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX);
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX);
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 			}
 			while((accY >= -900) &&  (accY <= 3600) && (steppermotor != 0))
@@ -250,31 +250,31 @@ void vTask3( void *pvParameters )
 					--steppermotor;
 					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
 					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(0,50,10000);   //the higher the frequency the slower the motor turns
-					sleep_us(1); //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(0,50,10000);
+					init_PWM(0,50,20000);   //the higher the frequency the slower the motor turns
+					vTaskDelay(1);; //we sleep a given amount of time to make sure the program doesn't change anything for that time
+					init_PWM(0,50,20000);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 				else if(steppermotor < 0)
 				{
 					++steppermotor;
 					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(0,50,10000); //the higher the frequency the slower the motor turns
-					sleep_us(1);
-					init_PWM(0,50,10000); //the left number in init_PWM is duty cycle and the right is frequency
+					init_PWM(0,50,20000); //the higher the frequency the slower the motor turns
+					vTaskDelay(1);;
+					init_PWM(0,50,20000); //the left number in init_PWM is duty cycle and the right is frequency
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-					printf("steppermotor: %d\n", steppermotor);
-					printf("accX > %d ", accX);
-					printf("accY > %d ", accY);
-					printf("accZ > %d\n", accZ);
+//					printf("steppermotor: %d\n", steppermotor);
+//					printf("accX > %d ", accX);
+//					printf("accY > %d ", accY);
+//					printf("accZ > %d\n", accZ);
 				}
 			}
 		}
@@ -317,9 +317,15 @@ void vTask4( void *pvParameters )
 	{
 		uint8_t char_in;
 		//printf("Your baud rate is %d", SystemCoreClock/(16*DL));
-		//init_PWM(1,50,100); //the higher the frequency the slower the motor turns
-       //if(on) motor_adj.set(spd); //Make new function to allow PWM adjustment without re0initalizing
-       //else motor_adj.set(0);
+		init_PWM(1,60,100);
+       if(on)
+    	   {
+    	   	   init_PWM(1,spd,100); //Make new function to allow PWM adjustment without re0initalizing
+    	   }
+       else
+    	   {
+    	   	   init_PWM(1, 0, 100);
+    	   }
 
        char_in = read();
 
@@ -346,8 +352,8 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
-               LPC_GPIO1->FIOCLR |= 1<<24;
-               for(int m = 0; m < 5; m++)
+               LPC_GPIO0->FIOCLR |= 1<<24;
+               for(int m = 0; m < 20; m++)
                {
                    LPC_GPIO0->FIOCLR |= 1<<25;
                    vTaskDelay(1);
@@ -361,8 +367,8 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-               LPC_GPIO1->FIOSET |= 1<<24;
-               for(int d = 0; d < 5; d++)
+               LPC_GPIO0->FIOSET |= 1<<24;
+               for(int d = 0; d < 20; d++)
                {
                    LPC_GPIO0->FIOCLR |= 1<<25;
                    vTaskDelay(1);
@@ -378,9 +384,9 @@ void vTask4( void *pvParameters )
             {
                 while(mtr != 0)
                 {
-                    LPC_GPIO1->FIOCLR |= 1<<25;
+                    LPC_GPIO0->FIOCLR |= 1<<25;
                     vTaskDelay(1);
-                    LPC_GPIO1->FIOSET |= 1<<25;
+                    LPC_GPIO0->FIOSET |= 1<<25;
                     vTaskDelay(1);
                     mtr++;
                 }
@@ -389,15 +395,15 @@ void vTask4( void *pvParameters )
             {
                 while(mtr != 0)
                 {
-                    LPC_GPIO1->FIOSET |= 1<<25;
+                    LPC_GPIO0->FIOSET |= 1<<25;
                     vTaskDelay(1);
-                    LPC_GPIO1->FIOSET |= 1<<25;
+                    LPC_GPIO0->FIOSET |= 1<<25;
                     vTaskDelay(1);
                     mtr--;
                 }
             }
 	   }
-       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
+//       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
         vTaskDelay(10);
 	}
 
@@ -618,29 +624,4 @@ void sleep_us (int us)
     }
 }
 
-void init_PWM(uint32_t PWM_num, uint32_t PWMinval, uint32_t speed)
-{
-	//Power for PWM1, sets 6th bit of PCONP register to 1 which is PWM1;
-		//PCONP register is peripheral power control register
-		LPC_SC->PCONP |= (1 << 6);
-		//peripheral clock select for PWM cclk/8
-		LPC_SC->PCLKSEL0 |= ((1 << 13) | (1 << 12));
-		//pin select
-		if(0 < PWM_num < 4)
-		{
-			LPC_PINCON->PINSEL4 |= (0x1<<PWM_num*2); //sets 01 for bits [1:0] of PINSEL4 register, which sets P2.0 to PWM1.1 operation
-		}
-		LPC_PWM1->TCR = (1<<1);   	//counter reset, set 2nd bit of TCR register to 1;
-		LPC_PWM1->PR = 0;        //count frequency, prescale register
-		LPC_PWM1->PC = 0;		//prescale counter
-		LPC_PWM1->MCR = (1 << 1); //reset TC on Match 0
-		//set period & duty cycle
-		LPC_PWM1->MR0 = speed;	  //set PWM period/cycle to 1khz
-		LPC_PWM1->MR1 = PWMinval;	  //set 50% duty cycle; period/2
-		//write enable for match registers
-		LPC_PWM1->LER = (1<<0)|(1<<1); //latch MR0 and MR1 (must be used for those registers to be overwritten)
-		//pwm enable, settings
-		LPC_PWM1->PCR = (1<<9);   //PWM output enable, single-edged operation, must be set else otherwise PWM is a counter
-		LPC_PWM1->TCR = (1<<0) | (1<<3); //TC enable, PWM enable
 
-}

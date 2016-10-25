@@ -10,6 +10,7 @@ main.o main.d: ../main.c \
  C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/mpu_wrappers.h \
  C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/task.h \
  C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/list.h \
+ ../PWM.h \
  C:\Users\Dustin\Documents\Github\FreeRTOS_Library\demo_code/basic_io.h
 
 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/FreeRTOS.h:
@@ -33,5 +34,7 @@ C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/mpu_wrappers.h:
 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/task.h:
 
 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\include/list.h:
+
+../PWM.h:
 
 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\demo_code/basic_io.h:
