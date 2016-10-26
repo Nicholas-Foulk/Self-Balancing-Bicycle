@@ -5,16 +5,19 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../PWM.c \
+../StepperMotor.c \
 ../cr_startup_lpc17.c \
 ../main.c 
 
 OBJS += \
 ./PWM.o \
+./StepperMotor.o \
 ./cr_startup_lpc17.o \
 ./main.o 
 
 C_DEPS += \
 ./PWM.d \
+./StepperMotor.d \
 ./cr_startup_lpc17.d \
 ./main.d 
 

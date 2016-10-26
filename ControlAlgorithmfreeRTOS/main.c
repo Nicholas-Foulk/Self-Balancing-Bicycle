@@ -34,6 +34,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "PWM.h"
+#include "StepperMotor.h"
 
 /* Demo includes. */
 #include "basic_io.h"
@@ -152,6 +153,7 @@ void vTask3( void *pvParameters )
 	volatile static int i = 0 ;
 	// Enter an infinite loop, just incrementing a counter
 
+	stepperInit(2,0);
 	int steppermotor = 0;
 	while(1)
 	{
@@ -170,7 +172,6 @@ void vTask3( void *pvParameters )
 		//printf("accZ > %d\n", accZ);
 
 		result=accY-oldy;
-		init_PWM(0,0,10000);
 		if(fabs(result) > 1000)
 		{
 			while(accY > 3600)
@@ -178,13 +179,10 @@ void vTask3( void *pvParameters )
 				//If the bicycle is tipping to the right, we want the motor to constantly spin counterclockwise for
 				//counter weight until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor < 150) //this limit is arbitrary
+				if(steppermotor < 50) //this limit is arbitrary
 				{
 					++steppermotor;
-					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(0,50,20000); //the higher the frequency the slower the motor turns
-					vTaskDelay(1);
-					init_PWM(0,50,20000); //the left number in init_PWM is duty cycle and the right is frequency
+					stepperTurnF(2, 0, 2, 11, 1);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -195,7 +193,6 @@ void vTask3( void *pvParameters )
 				}
 				else
 				{
-					init_PWM(0,0,10000);
 					//We still want the data from the accelerometer to print out
 					ACC_Data[3] = SSPReceive(0x2B);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -212,14 +209,10 @@ void vTask3( void *pvParameters )
 				//If the bicycle is tipping to the left, we want the motor to constantly spin clockwise for counter weight
 				//until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor > -150)
+				if(steppermotor > -50)
 				{
 					--steppermotor;
-					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
-					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(0,50,20000);   //the higher the frequency the slower the motor turns
-					vTaskDelay(1);; //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(0,50,20000);
+					stepperTurnR(2, 0, 2, 11, 1);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -231,7 +224,6 @@ void vTask3( void *pvParameters )
 				else
 				{
 					//We still want the data from the accelerometer to print out
-					init_PWM(0,0,1000);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -248,11 +240,7 @@ void vTask3( void *pvParameters )
 				if(steppermotor > 0)
 				{
 					--steppermotor;
-					LPC_GPIO2 -> FIOCLR |= 1 << 11; //Making the motor spin right
-					//the left number in init_PWM is duty cycle and the right is frequency
-					init_PWM(0,50,20000);   //the higher the frequency the slower the motor turns
-					vTaskDelay(1);; //we sleep a given amount of time to make sure the program doesn't change anything for that time
-					init_PWM(0,50,20000);
+					stepperTurnR(2, 0, 2, 11, 1);
 					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -264,10 +252,7 @@ void vTask3( void *pvParameters )
 				else if(steppermotor < 0)
 				{
 					++steppermotor;
-					LPC_GPIO2 -> FIOSET |= 1 << 11; //Making the motor spin left
-					init_PWM(0,50,20000); //the higher the frequency the slower the motor turns
-					vTaskDelay(1);;
-					init_PWM(0,50,20000); //the left number in init_PWM is duty cycle and the right is frequency
+					stepperTurnF(2, 0, 2, 11, 1);
 					ACC_Data[3] = SSPReceive(0x2B);
 					ACC_Data[2] = SSPReceive(0x2A);
 					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
@@ -288,6 +273,7 @@ int on = FALSE;
 void vTask4( void *pvParameters )
 {
 
+//==========Bluetooth Init==========
 	LPC_SC->PCONP |= 1<<24;
 	LPC_SC->PCLKSEL1 &= ~(3<<16);
 	LPC_SC->PCLKSEL1 |= 1<<16;
@@ -308,41 +294,36 @@ void vTask4( void *pvParameters )
 	//DLAB = 0
 	LPC_UART2->LCR &= ~(1<<7);
 	//disable the divisor latch
+	//==========Bluetooth Init==========
 
 	//GPIO Init 0.23,0.24,0.25
  	LPC_PINCON->PINSEL1 &= ~(0x63<<14);
 	LPC_GPIO0->FIODIR |= 0x7<<23;
 
+	initPWM(1,60,100);
 	while(1)
 	{
 		uint8_t char_in;
 		//printf("Your baud rate is %d", SystemCoreClock/(16*DL));
-		init_PWM(1,60,100);
-       if(on)
-    	   {
-    	   	   init_PWM(1,spd,100); //Make new function to allow PWM adjustment without re0initalizing
-    	   }
-       else
-    	   {
-    	   	   init_PWM(1, 0, 100);
-    	   }
+		if(on) setPWMspeed(1,spd); //Make new function to allow PWM adjustment without re0initalizing
+		else setPWMspeed(1, 60);
 
-       char_in = read();
+		char_in = read();
 
-       if(char_in == 'G')
-       {
-           spd = 60;
-           on = TRUE;
-       }
-       else if(char_in == 'S')
-       {
-           spd = 60;
-           on = FALSE;
-       }
-       else if(char_in == 'U' && on && spd < 100)
-       {
-           spd = spd + 2;
-       }
+		if(char_in == 'G')
+		{
+		   spd = 60;
+		   on = TRUE;
+		}
+		else if(char_in == 'S')
+		{
+		   spd = 60;
+		   on = FALSE;
+		}
+		else if(char_in == 'U' && on && spd < 100)
+		{
+		   spd = spd + 2;
+		}
        else if(char_in == 'D' && on && spd > 60)
        {
            spd = spd - 2;
@@ -352,14 +333,15 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
-               LPC_GPIO0->FIOCLR |= 1<<24;
-               for(int m = 0; m < 20; m++)
-               {
-                   LPC_GPIO0->FIOCLR |= 1<<25;
-                   vTaskDelay(1);
-                   LPC_GPIO0->FIOSET |= 1<<25;
-                   vTaskDelay(1);
-               }
+               stepperTurnF(0,25,0,24,10);
+//               LPC_GPIO0->FIOCLR |= 1<<24;
+//               for(int m = 0; m < 20; m++)
+//               {
+//                   LPC_GPIO0->FIOCLR |= 1<<25;
+//                   vTaskDelay(1);
+//                   LPC_GPIO0->FIOSET |= 1<<25;
+//                   vTaskDelay(1);
+//               }
            //}
        }
        else if(char_in == 'R')
@@ -367,42 +349,43 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-               LPC_GPIO0->FIOSET |= 1<<24;
-               for(int d = 0; d < 20; d++)
-               {
-                   LPC_GPIO0->FIOCLR |= 1<<25;
-                   vTaskDelay(1);
-                   LPC_GPIO0->FIOSET |= 1<<25;
-                   vTaskDelay(1);
-               }
+               stepperTurnR(0,25,0,24,10);
+//               LPC_GPIO0->FIOSET |= 1<<24;
+//               for(int d = 0; d < 20; d++)
+//               {
+//                   LPC_GPIO0->FIOCLR |= 1<<25;
+//                   vTaskDelay(1);
+//                   LPC_GPIO0->FIOSET |= 1<<25;
+//                   vTaskDelay(1);
+//               }
           // }
        }
-       else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
-        {
-            mtr = mtr *5;
-            if(mtr < 0)
-            {
-                while(mtr != 0)
-                {
-                    LPC_GPIO0->FIOCLR |= 1<<25;
-                    vTaskDelay(1);
-                    LPC_GPIO0->FIOSET |= 1<<25;
-                    vTaskDelay(1);
-                    mtr++;
-                }
-            }
-            else if (mtr > 0)
-            {
-                while(mtr != 0)
-                {
-                    LPC_GPIO0->FIOSET |= 1<<25;
-                    vTaskDelay(1);
-                    LPC_GPIO0->FIOSET |= 1<<25;
-                    vTaskDelay(1);
-                    mtr--;
-                }
-            }
-	   }
+//       else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
+//        {
+//            mtr = mtr *5;
+//            if(mtr < 0)
+//            {
+//                while(mtr != 0)
+//                {
+//                    LPC_GPIO0->FIOCLR |= 1<<25;
+//                    vTaskDelay(1);
+//                    LPC_GPIO0->FIOSET |= 1<<25;
+//                    vTaskDelay(1);
+//                    mtr++;
+//                }
+//            }
+//            else if (mtr > 0)
+//            {
+//                while(mtr != 0)
+//                {
+//                    LPC_GPIO0->FIOSET |= 1<<25;
+//                    vTaskDelay(1);
+//                    LPC_GPIO0->FIOSET |= 1<<25;
+//                    vTaskDelay(1);
+//                    mtr--;
+//                }
+//            }
+//	   }
 //       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
         vTaskDelay(10);
 	}

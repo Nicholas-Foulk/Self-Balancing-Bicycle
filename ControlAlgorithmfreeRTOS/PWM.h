@@ -19,9 +19,9 @@ typedef struct
 	uint32_t pin;
 } PWM;
 
-void create(PWM *newPWM, uint32_t port, uint32_t pin, uint32_t dcycle, uint32_t period);
-void init_PWM(uint32_t PWM_pin, uint32_t dcycle, uint32_t period);
-void set_period(uint32_t PWM_pin, uint32_t period);
-void set_speed(uint32_t PWM_pin, uint32_t dcycle);
+//void create(PWM *newPWM, uint32_t port, uint32_t pin, uint32_t dcycle, uint32_t period);
+void initPWM(uint32_t PWM_pin, uint32_t dcycle, uint32_t period);
+void setPWMperiod(uint32_t period);
+void setPWMspeed(uint32_t PWM_pin, uint32_t dcycle);
 
 #endif /* PWM_H_ */

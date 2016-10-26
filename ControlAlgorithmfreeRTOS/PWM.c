@@ -7,16 +7,16 @@
 
 #include "PWM.h"
 
-void create(PWM *newPWM, uint32_t port, uint32_t pin, uint32_t dcycle, uint32_t period)
-{
-	newPWM->dcycle = 0;
-	newPWM->pin = 0;
-	newPWM->period = 0;
-}
+//void create(PWM *newPWM, uint32_t pin, uint32_t dcycle, uint32_t period)
+//{
+//	newPWM->dcycle = dcycle;
+//	newPWM->pin = pin;
+//	newPWM->period = period;
+//}
 
-void init_PWM(uint32_t PWM_pin, uint32_t dcycle, uint32_t period)
+void initPWM(uint32_t PWM_pin, uint32_t dcycle, uint32_t period)
 {
-		if(0 <= PWM_pin < 4)
+		if(0 <= PWM_pin <= 5)
 		{
 			//Power for PWM1, sets 6th bit of PCONP register to 1 which is PWM1;
 			//PCONP register is peripheral power control register
@@ -48,12 +48,16 @@ void init_PWM(uint32_t PWM_pin, uint32_t dcycle, uint32_t period)
 
 }
 
-void set_period(uint32_t PWM_pin, uint32_t period)
+void setPWMperiod(uint32_t period) //affects all pins on PWM1
 {
 	LPC_PWM1->MR0 = period;
 }
-void set_speed(uint32_t PWM_pin, uint32_t dcycle)
+void setPWMspeed(uint32_t PWM_pin, uint32_t dcycle)
 {
-	if(PWM_pin == 1) LPC_PWM1->MR1 = dcycle;
-	else if (PWM_pin == 2)LPC_PWM1->MR2 = dcycle;
+	if(0 <= PWM_pin <= 5)
+	{
+		if(PWM_pin == 0) LPC_PWM1->MR1 = dcycle;		//duty cycle is a %, so dcycle = dividend/period --> dividend = dcycle*period ;
+		else if (PWM_pin == 1)LPC_PWM1->MR2 = dcycle;
+		LPC_PWM1->LER = (1<<(PWM_pin+1)); //latch MR(n) (must be used for those registers to be overwritten)
+	}
 }
