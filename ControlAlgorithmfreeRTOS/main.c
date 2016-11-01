@@ -155,6 +155,23 @@ void vTask3( void *pvParameters )
 
 	stepperInit(2,0);
 	int steppermotor = 0;
+
+	/*
+	 * Here are our declarations for the PID control loop
+	 */
+
+
+	int last_error = 0;
+	int targetposition = 2550;  //out set target position
+	int integral = 0;
+	int Kp = 10;  //constant variable used for multiplying error
+	int Ki = 1;  //constant variable used for multiplying integral
+	int Kd = 5;  //constant variable used for multiplying derivative
+	int derivative = 0;
+	int error = 0;
+	int CV = 0;
+
+
 	while(1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
@@ -167,102 +184,41 @@ void vTask3( void *pvParameters )
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		//printf("accX > %d ", accX);
-		//printf("accY > %d ", accY);
-		//printf("accZ > %d\n", accZ);
+		//printf("accY > %d\n ", accY);
 
-		result=accY-oldy;
-		if(fabs(result) > 1000)
+		error = accY - targetposition; //target position - current position
+		derivative = error - last_error; //derivative
+		integral = integral + error;         //integral portion of the algorithm
+		//CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
+		CV = (error * Kp) + (derivative* Kd);
+		//printf ("%d \n", CV);
+		if (CV > 2000)
 		{
-			while(accY > 3600)
-			{
-				//If the bicycle is tipping to the right, we want the motor to constantly spin counterclockwise for
-				//counter weight until we reach our limit
-				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor < 50) //this limit is arbitrary
-				{
-					++steppermotor;
-					stepperTurnF(2, 0, 2, 11, 1);
-					ACC_Data[3] = SSPReceive(0x2B);
-					ACC_Data[2] = SSPReceive(0x2A);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX);
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-				else
-				{
-					//We still want the data from the accelerometer to print out
-					ACC_Data[3] = SSPReceive(0x2B);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX);
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-			}
-			//The reason we don't reset steppermotor variable is because if the pendulum system is tipping left,
-			//we have to go more than 100 steps to hit out limit on the left.
-			while(accY < -900)
-			{
-				//If the bicycle is tipping to the left, we want the motor to constantly spin clockwise for counter weight
-				//until we reach our limit
-				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor > -50)
-				{
-					--steppermotor;
-					stepperTurnR(2, 0, 2, 11, 1);
-					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
-					ACC_Data[2] = SSPReceive(0x2A);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-				else
-				{
-					//We still want the data from the accelerometer to print out
-					ACC_Data[3] = SSPReceive(0x2B);
-					ACC_Data[2] = SSPReceive(0x2A);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX);
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-			}
-			while((accY >= -900) &&  (accY <= 3600) && (steppermotor != 0))
-			{
-				//If the bicycle is not tipping at all, we want to move back to being balanced.
-				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps
-				if(steppermotor > 0)
-				{
-					--steppermotor;
-					stepperTurnR(2, 0, 2, 11, 1);
-					ACC_Data[3] = SSPReceive(0x2B); //We are taking data from the SSP setup accelerometer and putting it into data
-					ACC_Data[2] = SSPReceive(0x2A);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX); //We decided to print here to make sure the accelerometer is still working.
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-				else if(steppermotor < 0)
-				{
-					++steppermotor;
-					stepperTurnF(2, 0, 2, 11, 1);
-					ACC_Data[3] = SSPReceive(0x2B);
-					ACC_Data[2] = SSPReceive(0x2A);
-					accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-//					printf("steppermotor: %d\n", steppermotor);
-//					printf("accX > %d ", accX);
-//					printf("accY > %d ", accY);
-//					printf("accZ > %d\n", accZ);
-				}
-			}
+			CV = 2000;
 		}
+		else if (CV < - 2000)
+		{
+			CV = -2000;
+		}
+		/*
+		 * Here is my concern with the stepperTurnF and stepperTurnR functions,
+		 * The example shown in the slack link shows the CV variable being passed over to the PWM function used for
+		 * turning the stepper motor. We don't have that and since the example's PWM function isn't present the
+		 * function may contain a loop within it for running the function multiple times.
+		 */
+		if (CV > 0)
+		{
+			stepperTurnR(2, 0, 2, 11, 1); // I changed it from 1 to CV
+		}
+		else if (CV < 0)
+		{
+			stepperTurnF(2, 0, 2, 11, 1); // I changed it from 1 to CV
+		}
+		else //this is supposed to not turn the stepper motor
+		{
+			stepperTurnF(2, 0, 2, 0, 1); // I changed it from 1 to CV
+		}
+		last_error = error;
 	}
 	return;
 }
