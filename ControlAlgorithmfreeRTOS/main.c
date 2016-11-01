@@ -156,13 +156,30 @@ void vTask3( void *pvParameters )
 	stepperInit(2,0);
 	int steppermotor = 0;
 
+	int c;
+	int summmation = 0;
+	int mean;
+	for(c = 0; c < 5; c= c+1)
+	{
+		ACC_Data[0] = SSPReceive(0x28);
+		ACC_Data[1] = SSPReceive(0x29);
+		ACC_Data[2] = SSPReceive(0x2A);
+		ACC_Data[3] = SSPReceive(0x2B);
+		ACC_Data[4] = SSPReceive(0x2C);
+		ACC_Data[5] = SSPReceive(0x2D);
+		accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
+		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
+		summation = summation + accY;
+	}
+	mean = (summation / 5);
 	/*
 	 * Here are our declarations for the PID control loop
 	 */
 
 
 	int last_error = 0;
-	int targetposition = 2550;  //out set target position
+	int targetposition = mean;  //out set target position
 	int integral = 0;
 	int Kp = 10;  //constant variable used for multiplying error
 	int Ki = 1;  //constant variable used for multiplying integral
