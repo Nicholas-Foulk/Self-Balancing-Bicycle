@@ -157,7 +157,7 @@ void vTask3( void *pvParameters )
 	int steppermotor = 0;
 
 	int c;
-	int summmation = 0;
+	int summation = 0;
 	int mean;
 	for(c = 0; c < 5; c= c+1)
 	{
@@ -178,17 +178,17 @@ void vTask3( void *pvParameters )
 	 */
 
 
-	int last_error = 0;
+	int last_error = mean;
 	int targetposition = mean;  //out set target position
 	int integral = 0;
-	int Kp = 10;  //constant variable used for multiplying error
+	int Kp = 4;  //constant variable used for multiplying error
 	int Ki = 1;  //constant variable used for multiplying integral
-	int Kd = 5;  //constant variable used for multiplying derivative
+	int Kd = 2;  //constant variable used for multiplying derivative
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
 
-
+	int limiter = 0;
 	while(1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
@@ -208,14 +208,16 @@ void vTask3( void *pvParameters )
 		integral = integral + error;         //integral portion of the algorithm
 		//CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
 		CV = (error * Kp) + (derivative* Kd);
-		//printf ("%d \n", CV);
-		if (CV > 2000)
+		//printf ("CV: %d \n", CV);
+		if (CV > 5000)
 		{
-			CV = 2000;
+
+			CV = 5000;
 		}
-		else if (CV < - 2000)
+		else if (CV < - 5000)
 		{
-			CV = -2000;
+
+			CV = -5000;
 		}
 		/*
 		 * Here is my concern with the stepperTurnF and stepperTurnR functions,
@@ -223,17 +225,24 @@ void vTask3( void *pvParameters )
 		 * turning the stepper motor. We don't have that and since the example's PWM function isn't present the
 		 * function may contain a loop within it for running the function multiple times.
 		 */
-		if (CV > 0)
+		if ( CV > 1500 && limiter < 100 )
 		{
+			limiter++;
+
+			//printf("Limiter: %d\n", limiter);
+			//printf("CV: %d\n", CV);
 			stepperTurnR(2, 0, 2, 11, 1); // I changed it from 1 to CV
 		}
-		else if (CV < 0)
+		else if ( CV < 1500  && limiter > -100)
 		{
+			limiter--;
+			//printf("Limiter: %d\n", limiter);
+			//printf("CV: %d\n", CV);
 			stepperTurnF(2, 0, 2, 11, 1); // I changed it from 1 to CV
 		}
-		else //this is supposed to not turn the stepper motor
+		else
 		{
-			stepperTurnF(2, 0, 2, 0, 1); // I changed it from 1 to CV
+			stepperTurnF(2, 0, 2, 11, 0);
 		}
 		last_error = error;
 	}
