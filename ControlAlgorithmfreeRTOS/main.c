@@ -54,6 +54,7 @@ void vTask1( void *pvParameters );
 void vTask3( void *pvParameters );
 void vTask4( void *pvParameters );
 
+int a = 0;
 /*Added functions from Control Algorithm Section*/
 
 uint8_t read(void);
@@ -76,6 +77,10 @@ void sleep_us (int us);
 
 /*-------------------------- ---------------------------------*/
 
+//3700
+//4500
+//2500
+
 int main( void )
 {
 	/* Init the semi-hosting. */
@@ -92,7 +97,7 @@ int main( void )
 	/* Create the other task in exactly the same way. */
 	//xTaskCreate( vTask2, "Task 2", 240, NULL, 1, NULL );
 
-	xTaskCreate( vTask3, "Task 3", 240, NULL, 1, NULL );
+	xTaskCreate( vTask3, "Task 3", 480, NULL, 1, NULL );
 	xTaskCreate( vTask4, "Task 4", 240, NULL, 1, NULL );
 
 	/* Start the scheduler so our tasks start executing. */
@@ -157,7 +162,7 @@ void vTask3( void *pvParameters )
 	int steppermotor = 0;
 
 	int c;
-	int summmation = 0;
+	int summation = 0;
 	int mean;
 	for(c = 0; c < 5; c= c+1)
 	{
@@ -187,6 +192,10 @@ void vTask3( void *pvParameters )
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
+	int limit = 0;
+	int l = 0;
+	int turnoffset = 800;
+	int baloffset = 150;
 
 
 	while(1)
@@ -223,17 +232,51 @@ void vTask3( void *pvParameters )
 		 * turning the stepper motor. We don't have that and since the example's PWM function isn't present the
 		 * function may contain a loop within it for running the function multiple times.
 		 */
-		if (CV > 0)
+		//printf("%i\n", targetposition);
+		if (accY > (targetposition + turnoffset) && limit < 50)
 		{
-			stepperTurnR(2, 0, 2, 11, 1); // I changed it from 1 to CV
+			limit = limit + 1;
+			stepperTurnR(2, 0, 2, 11, 1, 1);
 		}
-		else if (CV < 0)
+		else if (accY < (targetposition - turnoffset) && limit > -50)
 		{
-			stepperTurnF(2, 0, 2, 11, 1); // I changed it from 1 to CV
+			limit = limit - 1;
+			stepperTurnF(2, 0, 2, 11, 1, 1);
 		}
-		else //this is supposed to not turn the stepper motor
+		else if (((targetposition - baloffset) < accY && accY < (targetposition + baloffset)) && limit != 0)
 		{
-			stepperTurnF(2, 0, 2, 0, 1); // I changed it from 1 to CV
+			while(limit != 0)
+			{
+				if (limit > 0)
+				{
+					limit = limit - 1;
+					stepperTurnF(2, 0, 2, 11, 1, 1);
+					vTaskDelay(10);
+				}
+				else if (limit < 0)
+				{
+					limit = limit + 1;
+					stepperTurnR(2, 0, 2, 11, 1, 1);
+					vTaskDelay(10);
+				}
+			}
+		}
+		else
+		{
+//			if(a)	//flip the weights back and forth while centered to add balance?
+//			{
+//				stepperTurnR(2, 0, 2, 11, 1, 1);
+//				a = 0;
+//				vTaskDelay(10);
+//			}
+//			else
+//			{
+//				stepperTurnF(2, 0, 2, 11, 1, 1);
+//				a = 1;
+//				vTaskDelay(10);
+//			}
+//		}
+		stepperTurnR(2, 0, 2, 11, 1,0);
 		}
 		last_error = error;
 	}
@@ -306,7 +349,7 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
-               stepperTurnF(0,25,0,24,10);
+               stepperTurnF(0,25,0,24,1,10);
 //               LPC_GPIO0->FIOCLR |= 1<<24;
 //               for(int m = 0; m < 20; m++)
 //               {
@@ -322,7 +365,7 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-               stepperTurnR(0,25,0,24,10);
+               stepperTurnR(0,25,0,24,1,10);
 //               LPC_GPIO0->FIOSET |= 1<<24;
 //               for(int d = 0; d < 20; d++)
 //               {

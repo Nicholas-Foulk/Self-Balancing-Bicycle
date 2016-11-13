@@ -20,7 +20,7 @@ void stepperInit(uint32_t port, uint32_t pin)
 		LPC_GPIO2->FIODIR |= (0x1<<pin);
 	}
 }
-void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t duration)
+void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration)
 {
 	if(port == 0)
 		{
@@ -36,7 +36,7 @@ void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 			for(int m = 0; m < duration; m++)
 			{
 				LPC_GPIO0->FIOCLR |= 1<<pin;
-				vTaskDelay(1);
+				vTaskDelay(speed);
 				LPC_GPIO0->FIOSET |= 1<<pin;
 				vTaskDelay(1);
 			}
@@ -54,13 +54,13 @@ void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 			for(int m = 0; m < duration; m++)
 			{
 				LPC_GPIO2->FIOCLR |= 1<<pin;
-				vTaskDelay(1);
+				vTaskDelay(speed);
 				LPC_GPIO2->FIOSET |= 1<<pin;
 				vTaskDelay(1);
 			}
 		}
 }
-void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t duration)
+void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration)
 {
 	if(port == 0)
 	{
@@ -75,7 +75,7 @@ void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 		for(int m = 0; m < duration; m++)
 		{
 			LPC_GPIO0->FIOCLR |= 1<<pin;
-			vTaskDelay(1);
+			vTaskDelay(speed);
 			LPC_GPIO0->FIOSET |= 1<<pin;
 			vTaskDelay(1);
 		}
@@ -93,7 +93,7 @@ void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 		for(int m = 0; m < duration; m++)
 		{
 			LPC_GPIO2->FIOCLR |= 1<<pin;
-			vTaskDelay(1);
+			vTaskDelay(speed);
 			LPC_GPIO2->FIOSET |= 1<<pin;
 			vTaskDelay(1);
 		}
