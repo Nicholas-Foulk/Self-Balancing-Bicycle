@@ -77,6 +77,7 @@ void sleep_us (int us);
 /*-------------------------- ---------------------------------*/
 
 int main( void )
+
 {
 	/* Init the semi-hosting. */
 	printf( "\n" );
@@ -187,7 +188,7 @@ void vTask3( void *pvParameters )
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
-
+	int PWM;
 	int limiter = 0;
 	while(1)
 	{
@@ -200,8 +201,6 @@ void vTask3( void *pvParameters )
 		accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
-
-		//printf("accY > %d\n ", accY);
 
 		error = accY - targetposition; //target position - current position
 		derivative = error - last_error; //derivative
@@ -219,6 +218,7 @@ void vTask3( void *pvParameters )
 
 			CV = -5000;
 		}
+		PWM = abs(CV/500);
 		/*
 		 * Here is my concern with the stepperTurnF and stepperTurnR functions,
 		 * The example shown in the slack link shows the CV variable being passed over to the PWM function used for
@@ -231,18 +231,27 @@ void vTask3( void *pvParameters )
 
 			//printf("Limiter: %d\n", limiter);
 			//printf("CV: %d\n", CV);
-			stepperTurnR(2, 0, 2, 11, 1); // I changed it from 1 to CV
+			/*
+			 * So here I added a PWM signal, the PWM signal determines how long the signal should be high for and and how
+			 * long the signal should be low for. So the total amount of delay is 10 milliseconds. If PWM is 7, then low portion
+			 * will be 3. So the GPIO high signal will have a delay of 7 after it, while the low signal will have a delay of 3
+			 * after it.
+			 */
+			stepperTurnR(2, 0, 2, 11, 1, PWM); // I changed it from 1 to CV
+			//stepperTurnR(2, 0, 2, 11, 1);
 		}
 		else if ( CV < 1500  && limiter > -100)
 		{
 			limiter--;
 			//printf("Limiter: %d\n", limiter);
 			//printf("CV: %d\n", CV);
-			stepperTurnF(2, 0, 2, 11, 1); // I changed it from 1 to CV
+			stepperTurnF(2, 0, 2, 11, 1, PWM); // I changed it from 1 to CV
+			//stepperTurnF(2, 0, 2, 11, 1);
 		}
 		else
 		{
-			stepperTurnF(2, 0, 2, 11, 0);
+			stepperTurnF(2, 0, 2, 11, 0,PWM);
+			//stepperTurnF(2, 0, 2, 11, 0);
 		}
 		last_error = error;
 	}
@@ -315,7 +324,7 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
-               stepperTurnF(0,25,0,24,10);
+               stepperTurnF(0,25,0,24,10,5);
 //               LPC_GPIO0->FIOCLR |= 1<<24;
 //               for(int m = 0; m < 20; m++)
 //               {
@@ -331,7 +340,10 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-               stepperTurnR(0,25,0,24,10);
+               /*
+                * Here I just set the PWM signal to 5, so the duty cycle is 50% because it was 50% before the function.
+                */
+               stepperTurnR(0,25,0,24,10,5);
 //               LPC_GPIO0->FIOSET |= 1<<24;
 //               for(int d = 0; d < 20; d++)
 //               {
@@ -369,6 +381,10 @@ void vTask4( void *pvParameters )
 //            }
 //	   }
 //       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
+
+		/*
+		 * Do you realize there is a delay here at line 390?????????
+		 */
         vTaskDelay(10);
 	}
 
