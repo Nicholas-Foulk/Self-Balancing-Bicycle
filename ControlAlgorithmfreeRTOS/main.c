@@ -54,7 +54,7 @@ void vTask1( void *pvParameters );
 void vTask3( void *pvParameters );
 void vTask4( void *pvParameters );
 
-int a = 0;
+int cent = 0;
 /*Added functions from Control Algorithm Section*/
 
 uint8_t read(void);
@@ -162,27 +162,32 @@ void vTask3( void *pvParameters )
 	stepperInit(2,0);
 	int steppermotor = 0;
 
-	int c;
-	int summation = 0;
-	int mean;
-	for(c = 0; c < 5; c= c+1)
-	{
-		ACC_Data[0] = SSPReceive(0x28);
-		ACC_Data[1] = SSPReceive(0x29);
-		ACC_Data[2] = SSPReceive(0x2A);
-		ACC_Data[3] = SSPReceive(0x2B);
-		ACC_Data[4] = SSPReceive(0x2C);
-		ACC_Data[5] = SSPReceive(0x2D);
-		accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
-		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
-		summation = summation + accY;
-	}
-	mean = (summation / 5);
 	/*
 	 * Here are our declarations for the PID control loop
 	 */
 
+	int calc_target()
+	{
+		int c;
+		int summation = 0;
+		for(c = 0; c < 5; c= c+1)
+		{
+			ACC_Data[0] = SSPReceive(0x28);
+			ACC_Data[1] = SSPReceive(0x29);
+			ACC_Data[2] = SSPReceive(0x2A);
+			ACC_Data[3] = SSPReceive(0x2B);
+			ACC_Data[4] = SSPReceive(0x2C);
+			ACC_Data[5] = SSPReceive(0x2D);
+			accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
+			accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
+			accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
+			summation = summation + accY;
+		}
+		return (summation / 5);
+	}
+
+	int mean = 0;
+	mean = calc_target();
 
 	int last_error = mean;
 	int targetposition = mean;  //out set target position
@@ -196,6 +201,8 @@ void vTask3( void *pvParameters )
 	int limit = 0;
 	int turnoffset = 800;
 	int baloffset = 150;
+	int flip = 1;
+	int a = 1;
 
 	while(1)
 	{
@@ -208,6 +215,15 @@ void vTask3( void *pvParameters )
 		accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
+
+		if(cent == TRUE)
+		{
+			targetposition = calc_target();
+			cent = FALSE;
+			error = 0;
+			limit = 0;
+			CV = 0;
+		}
 
 		error = accY - targetposition; //target position - current position
 		derivative = error - last_error; //derivative
@@ -225,17 +241,20 @@ void vTask3( void *pvParameters )
 
 			CV = -5000;
 		}
-		printf("%i\n", CV);
+		CV = abs(CV/500);
+		//printf("%i\n", targetposition);
 		//printf("%i\n", targetposition);
 		if (accY > (targetposition + turnoffset) && limit < 50)
 		{
+			flip = 0;
 			limit = limit + 1;
-			stepperTurnR(2, 0, 2, 11, 1, 1);
+			stepperTurnR(2, 0, 2, 11, CV, 1);
 		}
 		else if (accY < (targetposition - turnoffset) && limit > -50)
 		{
 			limit = limit - 1;
-			stepperTurnF(2, 0, 2, 11, 1, 1);
+			flip = 0;
+			stepperTurnF(2, 0, 2, 11, CV, 1);
 		}
 		else if (((targetposition - baloffset) < accY && accY < (targetposition + baloffset)) && limit != 0)
 		{
@@ -255,22 +274,42 @@ void vTask3( void *pvParameters )
 				}
 			}
 		}
-		else
+		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0)
 		{
-//			if(a)	//flip the weights back and forth while centered to add balance?
-//			{
-//				stepperTurnR(2, 0, 2, 11, 1, 1);
-//				a = 0;
-//				vTaskDelay(10);
-//			}
-//			else
-//			{
-//				stepperTurnF(2, 0, 2, 11, 1, 1);
-//				a = 1;
-//				vTaskDelay(10);
-//			}
-//		}
+			//printf("%i", flip);
+			if(flip == 1)
+			{
+			if(a)	//flip the weights back and forth while centered to add balance?
+			{
+				stepperTurnF(2, 0, 2, 11, 1, 10);
+				vTaskDelay(10);
+				a = 1;
+				flip = 0;
+			}
+			else if (a == -1)
+			{
+				stepperTurnR(2, 0, 2, 11, 1, 10);
+				vTaskDelay(10);
+				a = -1;
+				flip = 0;
+			}
+			}
+			else
+			{
+				if(a == 1)
+				{
+				stepperTurnF(2, 0, 2, 11, 1, 10);
+				vTaskDelay(10);
+				flip = 1;
 
+				}
+				else if (a == -1)
+				{
+					stepperTurnR(2, 0, 2, 11, 1, 10);
+					vTaskDelay(10);
+					flip = 1;
+				}
+			}
 		}
 		last_error = error;
 	}
@@ -376,8 +415,9 @@ void vTask4( void *pvParameters )
 //               }
           // }
        }
-//       else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
-//        {
+       else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
+        {
+    	   cent = TRUE;
 //            mtr = mtr *5;
 //            if(mtr < 0)
 //            {
@@ -401,7 +441,7 @@ void vTask4( void *pvParameters )
 //                    mtr--;
 //                }
 //            }
-//	   }
+	   }
 //       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
 
 		/*
