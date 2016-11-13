@@ -82,6 +82,7 @@ void sleep_us (int us);
 //2500
 
 int main( void )
+
 {
 	/* Init the semi-hosting. */
 	printf( "\n" );
@@ -183,21 +184,22 @@ void vTask3( void *pvParameters )
 	 */
 
 
-	int last_error = 0;
+	int last_error = mean;
 	int targetposition = mean;  //out set target position
 	int integral = 0;
-	int Kp = 10;  //constant variable used for multiplying error
+	int Kp = 4;  //constant variable used for multiplying error
 	int Ki = 1;  //constant variable used for multiplying integral
-	int Kd = 5;  //constant variable used for multiplying derivative
+	int Kd = 2;  //constant variable used for multiplying derivative
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
-	int limit = 0;
 	int l = 0;
 	int turnoffset = 800;
 	int baloffset = 150;
 
 
+
+	int limiter = 0;
 	while(1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
@@ -210,22 +212,23 @@ void vTask3( void *pvParameters )
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
 		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		//printf("accY > %d\n ", accY);
-
 		error = accY - targetposition; //target position - current position
 		derivative = error - last_error; //derivative
 		integral = integral + error;         //integral portion of the algorithm
 		//CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
 		CV = (error * Kp) + (derivative* Kd);
-		//printf ("%d \n", CV);
-		if (CV > 2000)
+		//printf ("CV: %d \n", CV);
+		if (CV > 5000)
 		{
-			CV = 2000;
+
+			CV = 5000;
 		}
-		else if (CV < - 2000)
+		else if (CV < - 5000)
 		{
-			CV = -2000;
+
+			CV = -5000;
 		}
+		PWM = abs(CV/500);
 		/*
 		 * Here is my concern with the stepperTurnF and stepperTurnR functions,
 		 * The example shown in the slack link shows the CV variable being passed over to the PWM function used for
@@ -276,7 +279,7 @@ void vTask3( void *pvParameters )
 //				vTaskDelay(10);
 //			}
 //		}
-		stepperTurnR(2, 0, 2, 11, 1,0);
+
 		}
 		last_error = error;
 	}
@@ -349,7 +352,11 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
+<<<<<<< HEAD
                stepperTurnF(0,25,0,24,1,10);
+=======
+               stepperTurnF(0,25,0,24,10,5);
+>>>>>>> e3c5183cd062091959f44b9c4c2888cc123b3596
 //               LPC_GPIO0->FIOCLR |= 1<<24;
 //               for(int m = 0; m < 20; m++)
 //               {
@@ -365,7 +372,14 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
+<<<<<<< HEAD
                stepperTurnR(0,25,0,24,1,10);
+=======
+               /*
+                * Here I just set the PWM signal to 5, so the duty cycle is 50% because it was 50% before the function.
+                */
+               stepperTurnR(0,25,0,24,10,5);
+>>>>>>> e3c5183cd062091959f44b9c4c2888cc123b3596
 //               LPC_GPIO0->FIOSET |= 1<<24;
 //               for(int d = 0; d < 20; d++)
 //               {
@@ -403,6 +417,10 @@ void vTask4( void *pvParameters )
 //            }
 //	   }
 //       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
+
+		/*
+		 * Do you realize there is a delay here at line 390?????????
+		 */
         vTaskDelay(10);
 	}
 

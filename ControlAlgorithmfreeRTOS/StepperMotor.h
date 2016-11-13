@@ -1,6 +1,12 @@
 /*
  * StepperMotor.h
  *
+ *  Created on: Nov 1, 2016
+ *      Author: nick
+ */
+/*
+ * StepperMotor.h
+ *
  *  Created on: Oct 16, 2016
  *      Author: Dustin
  */
@@ -16,6 +22,7 @@
 //make a struct
 
 void stepperInit(uint32_t port, uint32_t pin);
+
 void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration);
 void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration);
 void stepperRelease(uint32_t port, uint32_t pin);

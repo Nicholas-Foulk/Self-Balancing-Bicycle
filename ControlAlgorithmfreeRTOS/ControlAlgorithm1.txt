@@ -1,7 +1,7 @@
 if(fabs(result) > 1000)
 		{
 			while(accY > 3600)
-			{
+				{
 				//If the bicycle is tipping to the right, we want the motor to constantly spin counterclockwise for
 				//counter weight until we reach our limit
 				//the reason we have this if loop is because we only want the stepper motor to take 100 microsteps

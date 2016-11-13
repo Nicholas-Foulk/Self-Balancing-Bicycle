@@ -1,6 +1,12 @@
 /*
  * StepperMotor.c
  *
+ *  Created on: Nov 1, 2016
+ *      Author: nick
+ */
+/*
+ * StepperMotor.c
+ *
  *  Created on: Oct 25, 2016
  *      Author: Dustin
  */
@@ -20,8 +26,11 @@ void stepperInit(uint32_t port, uint32_t pin)
 		LPC_GPIO2->FIODIR |= (0x1<<pin);
 	}
 }
+
 void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration)
+
 {
+	int opp = 10 - PWM;
 	if(port == 0)
 		{
 			if(dirport == 0)
@@ -32,13 +41,13 @@ void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 			{
 				LPC_GPIO2->FIOSET |= 1<<dirpin;
 			}
-
-			for(int m = 0; m < duration; m++)
+			int m;
+			for(m = 0; m < duration; m=m+1)
 			{
 				LPC_GPIO0->FIOCLR |= 1<<pin;
 				vTaskDelay(speed);
 				LPC_GPIO0->FIOSET |= 1<<pin;
-				vTaskDelay(1);
+				vTaskDelay(opp);
 			}
 		}
 		else if(port == 2)
@@ -51,17 +60,20 @@ void stepperTurnF(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 			{
 				LPC_GPIO2->FIOSET |= 1<<dirpin;
 			}
-			for(int m = 0; m < duration; m++)
+			int m;
+			for(m = 0; m < duration; m=m+1)
 			{
 				LPC_GPIO2->FIOCLR |= 1<<pin;
 				vTaskDelay(speed);
+				vTaskDelay(PWM);
 				LPC_GPIO2->FIOSET |= 1<<pin;
-				vTaskDelay(1);
+				vTaskDelay(opp);
 			}
 		}
 }
 void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin, uint32_t speed, uint32_t duration)
 {
+	int opp = 10 - PWM;
 	if(port == 0)
 	{
 		if(dirport == 0)
@@ -72,12 +84,13 @@ void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 		{
 			LPC_GPIO2->FIOCLR |= 1<<dirpin;
 		}
-		for(int m = 0; m < duration; m++)
+		int m;
+		for(m = 0; m < duration; m=m+1)
 		{
 			LPC_GPIO0->FIOCLR |= 1<<pin;
 			vTaskDelay(speed);
 			LPC_GPIO0->FIOSET |= 1<<pin;
-			vTaskDelay(1);
+			vTaskDelay(opp);
 		}
 	}
 	else if(port == 2)
@@ -90,12 +103,13 @@ void stepperTurnR(uint32_t port, uint32_t pin, uint32_t dirport, uint32_t dirpin
 		{
 			LPC_GPIO2->FIOCLR |= 1<<dirpin;
 		}
-		for(int m = 0; m < duration; m++)
+		int m;
+		for(m = 0; m < duration; m=m+1)
 		{
 			LPC_GPIO2->FIOCLR |= 1<<pin;
 			vTaskDelay(speed);
 			LPC_GPIO2->FIOSET |= 1<<pin;
-			vTaskDelay(1);
+			vTaskDelay(opp);
 		}
 	}
 }
@@ -104,3 +118,5 @@ void stepperRelease(uint32_t port, uint32_t pin) //used to clear out configurati
 	//PINCON [whatever] = 00
 	//DIR [whatever] = 00
 }
+
+
