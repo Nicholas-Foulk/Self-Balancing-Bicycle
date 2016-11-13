@@ -193,13 +193,10 @@ void vTask3( void *pvParameters )
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
-	int l = 0;
+	int limit = 0;
 	int turnoffset = 800;
 	int baloffset = 150;
 
-
-
-	int limiter = 0;
 	while(1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
@@ -228,13 +225,7 @@ void vTask3( void *pvParameters )
 
 			CV = -5000;
 		}
-		PWM = abs(CV/500);
-		/*
-		 * Here is my concern with the stepperTurnF and stepperTurnR functions,
-		 * The example shown in the slack link shows the CV variable being passed over to the PWM function used for
-		 * turning the stepper motor. We don't have that and since the example's PWM function isn't present the
-		 * function may contain a loop within it for running the function multiple times.
-		 */
+		printf("%i\n", CV);
 		//printf("%i\n", targetposition);
 		if (accY > (targetposition + turnoffset) && limit < 50)
 		{
@@ -352,11 +343,9 @@ void vTask4( void *pvParameters )
 //          if(mtr > -45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr-1;
-<<<<<<< HEAD
+
                stepperTurnF(0,25,0,24,1,10);
-=======
-               stepperTurnF(0,25,0,24,10,5);
->>>>>>> e3c5183cd062091959f44b9c4c2888cc123b3596
+
 //               LPC_GPIO0->FIOCLR |= 1<<24;
 //               for(int m = 0; m < 20; m++)
 //               {
@@ -372,14 +361,11 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-<<<<<<< HEAD
                stepperTurnR(0,25,0,24,1,10);
-=======
                /*
                 * Here I just set the PWM signal to 5, so the duty cycle is 50% because it was 50% before the function.
                 */
-               stepperTurnR(0,25,0,24,10,5);
->>>>>>> e3c5183cd062091959f44b9c4c2888cc123b3596
+
 //               LPC_GPIO0->FIOSET |= 1<<24;
 //               for(int d = 0; d < 20; d++)
 //               {
