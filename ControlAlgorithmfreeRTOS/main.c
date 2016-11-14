@@ -77,9 +77,9 @@ void sleep_us (int us);
 
 /*-------------------------- ---------------------------------*/
 
-//3700
-//4500
-//2500
+//3700 cnt
+//4500 right
+//2500 left
 
 int main( void )
 
@@ -201,8 +201,8 @@ void vTask3( void *pvParameters )
 	int limit = 0;
 	int turnoffset = 800;
 	int baloffset = 150;
-	int flip = 1;
-	int a = 1;
+	int flip = 0;
+	int a = 0;
 
 	while(1)
 	{
@@ -274,43 +274,52 @@ void vTask3( void *pvParameters )
 				}
 			}
 		}
-		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0)
+		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == 10)
 		{
 			//printf("%i", flip);
-			if(flip == 1)
+			while(a > 0)
 			{
-			if(a)	//flip the weights back and forth while centered to add balance?
-			{
-				stepperTurnF(2, 0, 2, 11, 1, 10);
-				vTaskDelay(10);
-				a = 1;
-				flip = 0;
+			stepperTurnF(2, 0, 2, 11, 1, 1);
+			vTaskDelay(10);
+			a--;
 			}
-			else if (a == -1)
-			{
-				stepperTurnR(2, 0, 2, 11, 1, 10);
-				vTaskDelay(10);
-				a = -1;
-				flip = 0;
-			}
-			}
-			else
-			{
-				if(a == 1)
-				{
-				stepperTurnF(2, 0, 2, 11, 1, 10);
-				vTaskDelay(10);
-				flip = 1;
-
-				}
-				else if (a == -1)
-				{
-					stepperTurnR(2, 0, 2, 11, 1, 10);
-					vTaskDelay(10);
-					flip = 1;
-				}
-			}
+			flip = -1;
 		}
+//		else if((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == 0)
+//		{
+//			if(flip == 1)
+//			{
+//				while(a < 10)
+//				{
+//				stepperTurnF(2, 0, 2, 11, 1, 1);
+//				vTaskDelay(10);
+//				a++;
+//				}
+//			}
+//			else if(flip == -1)
+//			{
+//				while(a > -10)
+//				{
+//				stepperTurnR(2, 0, 2, 11, 1, 1);
+//				vTaskDelay(10);
+//				a--;
+//				}
+//			}
+//			else
+//			{
+//				a = 10;
+//			}
+//		}
+//		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == -10)
+//		{
+//			while(a < 0)
+//			{
+//			stepperTurnR(2, 0, 2, 11, 1, 1);
+//			vTaskDelay(10);
+//			a++;
+//			}
+//			flip = 1;
+//		}
 		last_error = error;
 	}
 	return;
