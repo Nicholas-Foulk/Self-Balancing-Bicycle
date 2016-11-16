@@ -98,7 +98,7 @@ int main( void )
 	/* Create the other task in exactly the same way. */
 	//xTaskCreate( vTask2, "Task 2", 240, NULL, 1, NULL );
 
-	xTaskCreate( vTask3, "Task 3", 480, NULL, 1, NULL );
+	xTaskCreate( vTask3, "Task 3", 720, NULL, 1, NULL );
 	xTaskCreate( vTask4, "Task 4", 240, NULL, 1, NULL );
 
 	/* Start the scheduler so our tasks start executing. */
@@ -200,9 +200,10 @@ void vTask3( void *pvParameters )
 	int CV = 0;
 	int limit = 0;
 	int turnoffset = 800;
-	int baloffset = 150;
-	int flip = 0;
-	int a = 0;
+	int baloffset = 250;
+	int flip = 10;
+	int center = 0;
+	int o = 0;
 
 	while(1)
 	{
@@ -226,19 +227,18 @@ void vTask3( void *pvParameters )
 		}
 
 		error = accY - targetposition; //target position - current position
-		derivative = error - last_error; //derivative
+		//derivative = error - last_error; //derivative
 		integral = integral + error;         //integral portion of the algorithm
-		//CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
-		CV = (error * Kp) + (derivative* Kd);
-		//printf ("CV: %d \n", CV);
+		CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
+		//CV = (error * Kp) + (derivative* Kd);
+//		printf("i: %d\n", integral);
+//		printf ("CV: %d \n", CV);
 		if (CV > 5000)
 		{
-
 			CV = 5000;
 		}
 		else if (CV < - 5000)
 		{
-
 			CV = -5000;
 		}
 		CV = abs(CV/500);
@@ -246,80 +246,64 @@ void vTask3( void *pvParameters )
 		//printf("%i\n", targetposition);
 		if (accY > (targetposition + turnoffset) && limit < 50)
 		{
-			flip = 0;
+			center = FALSE;
 			limit = limit + 1;
-			stepperTurnR(2, 0, 2, 11, CV, 1);
+			stepperTurnF(2, 0, 2, 11, CV, 1);
 		}
 		else if (accY < (targetposition - turnoffset) && limit > -50)
 		{
+			center = FALSE;
 			limit = limit - 1;
-			flip = 0;
-			stepperTurnF(2, 0, 2, 11, CV, 1);
+			stepperTurnR(2, 0, 2, 11, CV, 1);
 		}
-		else if (((targetposition - baloffset) < accY && accY < (targetposition + baloffset)) && limit != 0)
+		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && center == TRUE)
+				{
+					//printf("%i", flip);
+					if(o)
+					{
+						limit = limit + 1;
+						flip++;
+						stepperTurnF(2, 0, 2, 11, 50, 1);
+						vTaskDelay(10);
+						if(flip >= 30)
+						{
+							o = FALSE;
+						}
+					}
+					else
+					{
+						limit = limit - 1;
+						flip--;
+						stepperTurnR(2, 0, 2, 11, 50, 1);
+						vTaskDelay(10);
+						if(flip <= -30)
+						{
+							o = TRUE;
+						}
+					}
+					//printf("%i\n", flip);
+				}
+		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit != 0)
 		{
+			flip = 0;
 			while(limit != 0)
 			{
 				if (limit > 0)
 				{
 					limit = limit - 1;
-					stepperTurnF(2, 0, 2, 11, 1, 1);
+					stepperTurnR(2, 0, 2, 11, 10, 1);
 					vTaskDelay(10);
 				}
 				else if (limit < 0)
 				{
 					limit = limit + 1;
-					stepperTurnR(2, 0, 2, 11, 1, 1);
+					stepperTurnF(2, 0, 2, 11, 10, 1);
 					vTaskDelay(10);
 				}
 			}
+			center = TRUE;
 		}
-		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == 10)
-		{
-			//printf("%i", flip);
-			while(a > 0)
-			{
-			stepperTurnF(2, 0, 2, 11, 1, 1);
-			vTaskDelay(10);
-			a--;
-			}
-			flip = -1;
-		}
-//		else if((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == 0)
-//		{
-//			if(flip == 1)
-//			{
-//				while(a < 10)
-//				{
-//				stepperTurnF(2, 0, 2, 11, 1, 1);
-//				vTaskDelay(10);
-//				a++;
-//				}
-//			}
-//			else if(flip == -1)
-//			{
-//				while(a > -10)
-//				{
-//				stepperTurnR(2, 0, 2, 11, 1, 1);
-//				vTaskDelay(10);
-//				a--;
-//				}
-//			}
-//			else
-//			{
-//				a = 10;
-//			}
-//		}
-//		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit == 0 && a == -10)
-//		{
-//			while(a < 0)
-//			{
-//			stepperTurnR(2, 0, 2, 11, 1, 1);
-//			vTaskDelay(10);
-//			a++;
-//			}
-//			flip = 1;
-//		}
+
 		last_error = error;
 	}
 	return;
