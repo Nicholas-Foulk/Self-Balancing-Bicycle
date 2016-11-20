@@ -1225,16 +1225,16 @@ END GROUP
                 [!provide]                PROVIDE (__valid_user_code_checksum, (0x0 - ((((((_vStackTop + (ResetISR + 0x1)) + (NMI_Handler + 0x1)) + (HardFault_Handler + 0x1)) + (DEFINED (MemManage_Handler)?MemManage_Handler:0x0 + 0x1)) + (DEFINED (BusFault_Handler)?BusFault_Handler:0x0 + 0x1)) + (DEFINED (UsageFault_Handler)?UsageFault_Handler:0x0 + 0x1))))
 OUTPUT(ControlAlgorithmfreeRTOS.axf elf32-littlearm)
 
-.debug_info     0x00000000     0x49ea
+.debug_info     0x00000000     0x49ed
  .debug_info    0x00000000      0x61e ./PWM.o
  .debug_info    0x0000061e      0x78c ./StepperMotor.o
  .debug_info    0x00000daa      0x1de ./cr_startup_lpc17.o
- .debug_info    0x00000f88     0x14d5 ./main.o
- .debug_info    0x0000245d      0x30d C:\Users\Dustin\Documents\Github\CMSISv1p30_LPC17xx\Debug\libCMSISv1p30_LPC17xx.a(system_LPC17xx.o)
- .debug_info    0x0000276a      0x3d4 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
- .debug_info    0x00002b3e     0x1888 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
- .debug_info    0x000043c6      0x37c C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
- .debug_info    0x00004742      0x2a8 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
+ .debug_info    0x00000f88     0x14d8 ./main.o
+ .debug_info    0x00002460      0x30d C:\Users\Dustin\Documents\Github\CMSISv1p30_LPC17xx\Debug\libCMSISv1p30_LPC17xx.a(system_LPC17xx.o)
+ .debug_info    0x0000276d      0x3d4 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
+ .debug_info    0x00002b41     0x1888 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
+ .debug_info    0x000043c9      0x37c C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
+ .debug_info    0x00004745      0x2a8 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
 
 .debug_abbrev   0x00000000     0x109d
  .debug_abbrev  0x00000000      0x122 ./PWM.o
@@ -1247,15 +1247,15 @@ OUTPUT(ControlAlgorithmfreeRTOS.axf elf32-littlearm)
  .debug_abbrev  0x00000dbf      0x1e5 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
  .debug_abbrev  0x00000fa4       0xf9 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
 
-.debug_loc      0x00000000     0x1ed3
+.debug_loc      0x00000000     0x1f08
  .debug_loc     0x00000000       0x70 ./PWM.o
  .debug_loc     0x00000070      0x4fc ./StepperMotor.o
  .debug_loc     0x0000056c       0x2b ./cr_startup_lpc17.o
- .debug_loc     0x00000597      0x427 ./main.o
- .debug_loc     0x000009be       0xa6 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
- .debug_loc     0x00000a64     0x118a C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
- .debug_loc     0x00001bee      0x280 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
- .debug_loc     0x00001e6e       0x65 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
+ .debug_loc     0x00000597      0x45c ./main.o
+ .debug_loc     0x000009f3       0xa6 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
+ .debug_loc     0x00000a99     0x118a C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
+ .debug_loc     0x00001c23      0x280 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
+ .debug_loc     0x00001ea3       0x65 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
 
 .debug_aranges  0x00000000      0x238
  .debug_aranges
@@ -1321,16 +1321,16 @@ OUTPUT(ControlAlgorithmfreeRTOS.axf elf32-littlearm)
  .debug_macro   0x00003bbd      0x10a C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
  .debug_macro   0x00003cc7       0xdd C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
 
-.debug_line     0x00000000     0x1db6
+.debug_line     0x00000000     0x1db8
  .debug_line    0x00000000      0x1fd ./PWM.o
  .debug_line    0x000001fd      0x379 ./StepperMotor.o
  .debug_line    0x00000576      0x1fd ./cr_startup_lpc17.o
- .debug_line    0x00000773      0x5b5 ./main.o
- .debug_line    0x00000d28      0x1e8 C:\Users\Dustin\Documents\Github\CMSISv1p30_LPC17xx\Debug\libCMSISv1p30_LPC17xx.a(system_LPC17xx.o)
- .debug_line    0x00000f10      0x2fb C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
- .debug_line    0x0000120b      0x65f C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
- .debug_line    0x0000186a      0x2c8 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
- .debug_line    0x00001b32      0x284 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
+ .debug_line    0x00000773      0x5b7 ./main.o
+ .debug_line    0x00000d2a      0x1e8 C:\Users\Dustin\Documents\Github\CMSISv1p30_LPC17xx\Debug\libCMSISv1p30_LPC17xx.a(system_LPC17xx.o)
+ .debug_line    0x00000f12      0x2fb C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(port.o)
+ .debug_line    0x0000120d      0x65f C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(tasks.o)
+ .debug_line    0x0000186c      0x2c8 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(heap_2.o)
+ .debug_line    0x00001b34      0x284 C:\Users\Dustin\Documents\Github\FreeRTOS_Library\Debug\libFreeRTOS_Library.a(list.o)
 
 .debug_str      0x00000000     0xdf07
  .debug_str     0x00000000     0x824a ./PWM.o

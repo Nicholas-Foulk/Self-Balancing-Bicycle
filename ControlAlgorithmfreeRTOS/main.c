@@ -201,9 +201,10 @@ void vTask3( void *pvParameters )
 	int limit = 0;
 	int turnoffset = 800;
 	int baloffset = 250;
-	int flip = 10;
+	int flip = 0;
 	int center = 0;
 	int o = 0;
+	int y = 0;
 
 	while(1)
 	{
@@ -213,9 +214,9 @@ void vTask3( void *pvParameters )
 		ACC_Data[3] = SSPReceive(0x2B);
 		ACC_Data[4] = SSPReceive(0x2C);
 		ACC_Data[5] = SSPReceive(0x2D);
-		accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
+		//accX = (int)(ACC_Data[1] << 8) | ACC_Data[0];
 		accY = (int)(ACC_Data[3] << 8) | ACC_Data[2];
-		accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
+		//accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
 		if(cent == TRUE)
 		{
@@ -227,7 +228,7 @@ void vTask3( void *pvParameters )
 		}
 
 		error = accY - targetposition; //target position - current position
-		//derivative = error - last_error; //derivative
+		derivative = error - last_error; //derivative
 		integral = integral + error;         //integral portion of the algorithm
 		CV = (error * Kp) + (integral * Ki) + (derivative* Kd); //Control variable
 		//CV = (error * Kp) + (derivative* Kd);
@@ -241,30 +242,41 @@ void vTask3( void *pvParameters )
 		{
 			CV = -5000;
 		}
-		CV = abs(CV/500);
+//		CV = 5000 - abs(CV);
+//		if(CV > 5000)
+//		{
+//			CV = 5000;
+//		}
+//		else if (CV <= 0)
+//		{
+//			CV = 1000;
+//		}
+		CV = abs(CV/100);
+//		printf("%i\n", CV);
 		//printf("%i\n", targetposition);
-		//printf("%i\n", targetposition);
-		if (accY > (targetposition + turnoffset) && limit < 50)
-		{
-			center = FALSE;
-			limit = limit + 1;
-			stepperTurnF(2, 0, 2, 11, CV, 1);
-		}
-		else if (accY < (targetposition - turnoffset) && limit > -50)
-		{
-			center = FALSE;
-			limit = limit - 1;
-			stepperTurnR(2, 0, 2, 11, CV, 1);
-		}
-		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && center == TRUE)
-				{
-					//printf("%i", flip);
+//		if (accY > (targetposition + turnoffset) && limit < 50)
+//		{
+//			center = FALSE;
+//			limit = limit + 1;
+//			stepperTurnF(2, 0, 2, 11, CV, 1);
+//		}
+//		else if (accY < (targetposition - turnoffset) && limit > -50)
+//		{
+//			center = FALSE;
+//			limit = limit - 1;
+//			stepperTurnR(2, 0, 2, 11, CV, 1);
+//		}
+//		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && center == TRUE)
+//				{
+//					//printf("%i", flip);
+		y = 1;
 					if(o)
 					{
 						limit = limit + 1;
 						flip++;
-						stepperTurnF(2, 0, 2, 11, 50, 1);
-						vTaskDelay(10);
+		//				y = 32 - abs(flip);
+						stepperTurnF(2, 0, 2, 11, y, 1);
+						vTaskDelay(5);
 						if(flip >= 30)
 						{
 							o = FALSE;
@@ -274,35 +286,37 @@ void vTask3( void *pvParameters )
 					{
 						limit = limit - 1;
 						flip--;
-						stepperTurnR(2, 0, 2, 11, 50, 1);
-						vTaskDelay(10);
+						y = 32 - abs(flip);
+						stepperTurnR(2, 0, 2, 11, y, 1);
+		//				vTaskDelay(5);
 						if(flip <= -30)
 						{
 							o = TRUE;
 						}
 					}
-					//printf("%i\n", flip);
-				}
-		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit != 0)
-		{
-			flip = 0;
-			while(limit != 0)
-			{
-				if (limit > 0)
-				{
-					limit = limit - 1;
-					stepperTurnR(2, 0, 2, 11, 10, 1);
-					vTaskDelay(10);
-				}
-				else if (limit < 0)
-				{
-					limit = limit + 1;
-					stepperTurnF(2, 0, 2, 11, 10, 1);
-					vTaskDelay(10);
-				}
-			}
-			center = TRUE;
-		}
+					//printf("%i:%i\n", y, flip);
+//				}
+//		else if ((targetposition - baloffset) < accY && accY < (targetposition + baloffset) && limit != 0 && center == FALSE)
+//		{
+//			flip = 0;
+//			while(limit != 0)
+//			{
+//				if (limit > 0)
+//				{
+//					limit = limit - 1;
+//					stepperTurnR(2, 0, 2, 11, CV, 1);
+//					vTaskDelay(10);
+//				}
+//				else if (limit < 0)
+//				{
+//					limit = limit + 1;
+//					stepperTurnF(2, 0, 2, 11, CV, 1);
+//					vTaskDelay(10);
+//				}
+//			}
+//			center = TRUE;
+//			vTaskDelay(10);
+//		}
 
 		last_error = error;
 	}
@@ -376,7 +390,7 @@ void vTask4( void *pvParameters )
 //          {
                mtr=mtr-1;
 
-               stepperTurnF(0,25,0,24,1,10);
+               stepperTurnF(0,25,0,24,50,10);
 
 //               LPC_GPIO0->FIOCLR |= 1<<24;
 //               for(int m = 0; m < 20; m++)
@@ -393,7 +407,7 @@ void vTask4( void *pvParameters )
 //          if(mtr < 45)	//limit for steering angle, need to test for more accurate limits
 //          {
                mtr=mtr+1;
-               stepperTurnR(0,25,0,24,1,10);
+               stepperTurnR(0,25,0,24,50,10);
                /*
                 * Here I just set the PWM signal to 5, so the duty cycle is 50% because it was 50% before the function.
                 */
