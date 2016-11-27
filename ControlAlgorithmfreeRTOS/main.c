@@ -163,8 +163,37 @@ void vTask3( void *pvParameters )
 	int steppermotor = 0;
 
 	/*
-	 * Here are our declarations for the PID control loop
+	 * Here are our declarations for the interrupting pins
+	 * Hopefully this works
 	 */
+	 LPC_PINCON->PINSEL4 &= (0 << 12);   //GPIO 2.6
+     LPC_PINCON->PINSEL4 &= (0 << 14);   //GPIO 2.7
+
+     LPC_GPIO2->FIODIR |= (0 << 6);
+     LPC_GPIO2->FIODIR |= (0 << 7);
+
+     //BIT(LPC_GPIOINT->IO2IntEnR).b7_6 = 1;
+     LPC_GPIOINT->IO2IntEnR |=(1 << 6);   //LPC17xx.h, line 279, GPIO 1
+     LPC_GPIOINT->IO2IntEnR |=(1 << 7);   //LPC17xx.h, line 279, GPIO 2
+
+     NVIC_EnableIRQ(EINT3_IRQn);   //vendor supplied, no complaints yet
+
+	 //isr_register(EINT3_IRQn,EINT3_ISR);   //startup.cpp line 338, we couldn't find the function
+
+	 /*
+	  * Here are our declarations for the PID control loop
+	  */
+     //QEI initial pin/register config
+     LPC_SC -> PCONP |= 1 << 18;
+      LPC_SC -> PCLKSEL1 |= (1 << 0) | (1 << 1);
+      LPC_PINCON -> PINSEL3 |= 1 << 8;   //P1.20  MCI0
+      LPC_PINCON -> PINSEL3 |= 1 << 14;  //P1.23  MCI1
+      LPC_PINCON -> PINSEL3 |= 1 << 16;  //P1.24  MCI2
+
+      //reset all counters
+      LPC_QEI->QEICON |= (0xF << 0);
+      //turn off signal mode
+      LPC_QEI->QEICONF &= ~(1 << 1);
 
 	int calc_target()
 	{
@@ -353,7 +382,16 @@ void vTask3( void *pvParameters )
 		}
 
 		last_error = error;
+		 if(LPC_QEI->QEIPOS != 0)
+		 {
+			 printf("%i\n", LPC_QEI->QEIPOS);
+		 }
+
 	}
+
+
+
+
 	return;
 }
 int mtr = 0;
@@ -473,13 +511,51 @@ void vTask4( void *pvParameters )
 	}
 
 }
+void initQEI(void)
+{
+	/*
+     * Here is the QEI initialization
+     */
+    LPC_SC -> PCONP |= 1 << 18;
+    LPC_SC -> PCLKSEL1 |= (1 << 0) | (1 << 1);
+    LPC_PINCON -> PINSEL3 |= 1 << 8;   //P1.20  MCI0
+    LPC_PINCON -> PINSEL3 |= 1 << 14;  //P1.23  MCI1
+    LPC_PINCON -> PINSEL3 |= 1 << 16;  //P1.24  MCI2
+
+    //reset all counters
+    LPC_QEI->QEICON |= (0xF << 0);
+    //turn off signal mode
+    LPC_QEI->QEICONF &= ~(1 << 1);
+
+    //enable direction change interrupt
+    //LPC_QEI->QEIIE |= (1 << 3);
+//    while(LPC_QEI->QEIPOS != 0){
+//    	printf("%i\n", LPC_QEI->QEIPOS);
+//    	vTaskDelay(1000);
+//    }
+}
 
 uint8_t read(void)
 {
   while(!(LPC_UART2->LSR & 1));
   return LPC_UART2->RBR;
 }
+static void EINT3_ISR(void)
+{
+   if(LPC_GPIOINT->IO2IntStatF & (1 << 6))
+   {
 
+	   LPC_GPIOINT->IO2IntClr |=(1 << 6); //table 123,
+	   return;
+   }
+   else if(LPC_GPIOINT->IO2IntStatF & (1 << 6))
+   {
+
+	 LPC_GPIOINT->IO2IntClr |=(1 << 7); //table 123,
+	 return;
+   }
+
+}
 /*-----------------------------------------------------------*/
 void vApplicationMallocFailedHook( void )
 {
