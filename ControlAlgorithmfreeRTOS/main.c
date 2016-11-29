@@ -164,39 +164,39 @@ void vTask3(void *pvParameters)
 	/*
 	 * QEI initial pin/register configuration
 	 */
-	    int current = 0;
-	  	LPC_SC->PCONP |= 1 << 18;
-		LPC_SC->PCLKSEL1 |= (1 << 0) | (1 << 1);
-		LPC_PINCON->PINSEL3 |= 1 << 8;   //P1.20  MCI0
-		LPC_PINCON->PINSEL3 |= 1 << 14;  //P1.23  MCI1
-		LPC_PINCON->PINSEL3 |= 1 << 16;  //P1.24  MCI2
+	int current = 0;
+	LPC_SC->PCONP |= 1 << 18;
+	LPC_SC->PCLKSEL1 |= (1 << 0) | (1 << 1);
+	LPC_PINCON->PINSEL3 |= 1 << 8;   //P1.20  MCI0
+	LPC_PINCON->PINSEL3 |= 1 << 14;  //P1.23  MCI1
+	LPC_PINCON->PINSEL3 |= 1 << 16;  //P1.24  MCI2
 
-		//reset all counters
-		LPC_QEI->QEICON |= (0xF << 0);
-		//turn off signal mode
-		LPC_QEI->QEICONF &= ~(1 << 1);
+	//reset all counters
+	LPC_QEI->QEICON |= (0xF << 0);
+	//turn off signal mode
+	LPC_QEI->QEICONF &= ~(1 << 1);
 
-		//new initialization registers
-		LPC_QEI->CMPOS1 = 0x00;
-		LPC_QEI->CMPOS2 = 0x00;
-		LPC_QEI->INXCMP = 0x00;
-		//LPC_QEI->QEILOAD = 0x00;
-		LPC_QEI->VELCOMP = 0x00;
-		LPC_QEI->QEIIEC = 0x01;
-		LPC_QEI->QEICLR = 0x41;
-		LPC_QEI->QEICONF = 0x04; //Cap x4
+	//new initialization registers
+	LPC_QEI->CMPOS1 = 0x00;
+	LPC_QEI->CMPOS2 = 0x00;
+	LPC_QEI->INXCMP = 0x00;
+	//LPC_QEI->QEILOAD = 0x00;
+	LPC_QEI->VELCOMP = 0x00;
+	LPC_QEI->QEIIEC = 0x01;
+	LPC_QEI->QEICLR = 0x41;
+	LPC_QEI->QEICONF = 0x04; //Cap x4
 
-		LPC_QEI->QEIMAXPOS = 0x50;
+	LPC_QEI->QEIMAXPOS = 0x50;
 
-		//LPC_QEI->QEILOAD = SystemCoreClock / 4;
+	//LPC_QEI->QEILOAD = SystemCoreClock / 4;
 
-		LPC_QEI->FILTER = 0x100;
+	LPC_QEI->FILTER = 0x100;
 
-		//enable direction change interrupt
-		/*if((LPC_QEI->QEIINTSTAT & 1) == 1)
-		 {
-		 printf("Index pulse indicated");
-		 }*/
+	//enable direction change interrupt
+	/*if((LPC_QEI->QEIINTSTAT & 1) == 1)
+	 {
+	 printf("Index pulse indicated");
+	 }*/
 
 	 /*
 	  * End of the QEI initialization section
@@ -349,6 +349,7 @@ void vTask3(void *pvParameters)
 		}
 
 		last_error = error;
+		current = LPC_QEI->QEIPOS;
 	}
 
 	return;
