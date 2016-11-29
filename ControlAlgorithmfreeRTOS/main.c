@@ -111,17 +111,20 @@ int main(void)
 }
 /*-----------------------------------------------------------*/
 
-void vTask1(void *pvParameters) {
+void vTask1(void *pvParameters)
+{
 	const char *pcTaskName = "Task 1 is running\n";
 	volatile unsigned long ul;
 
 	/* As per most tasks, this task is implemented in an infinite loop. */
-	for (;;) {
+	for (;;)
+	{
 		/* Print out the name of this task. */
 		vPrintString(pcTaskName);
 
 		/* Delay for a period. */
-		for (ul = 0; ul < mainDELAY_LOOP_COUNT; ul++) {
+		for (ul = 0; ul < mainDELAY_LOOP_COUNT; ul++)
+		{
 			/* This loop is just a very crude delay implementation.  There is
 			 nothing to do in here.  Later exercises will replace this crude
 			 loop with a proper delay/sleep function. */
@@ -358,7 +361,8 @@ int mtr = 0;
 int spd = 0;
 int on = FALSE;
 /*-----------------------------------------------------------*/
-void vTask4(void *pvParameters) {
+void vTask4(void *pvParameters)
+{
 
 //==========Bluetooth Init==========
 	LPC_SC->PCONP |= 1 << 24;
@@ -393,9 +397,13 @@ void vTask4(void *pvParameters) {
 		uint8_t char_in;
 		//printf("Your baud rate is %d", SystemCoreClock/(16*DL));
 		if (on)
+		{
 			setPWMspeed(1, spd); //Make new function to allow PWM adjustment without re0initalizing
+		}
 		else
+		{
 			setPWMspeed(1, 60);
+		}
 
 		char_in = read();
 
@@ -427,7 +435,8 @@ void vTask4(void *pvParameters) {
 
 //           }
 		}
-		else if (char_in == 'R') {
+		else if (char_in == 'R')
+		{
 //          if(mtr < 10)	//limit for steering angle, need to test for more accurate limits
 //          {
 			mtr = mtr + 1;
@@ -436,42 +445,18 @@ void vTask4(void *pvParameters) {
 //           }
 		}
 		else if (char_in == 'C') //Code to re-center motor, fix later if needed for testing
-				{
+		{
 			cent = TRUE;
-//            mtr = mtr *5;
-//            if(mtr < 0)
-//            {
-//                while(mtr != 0)
-//                {
-//                    LPC_GPIO0->FIOCLR |= 1<<25;
-//                    vTaskDelay(1);
-//                    LPC_GPIO0->FIOSET |= 1<<25;
-//                    vTaskDelay(1);
-//                    mtr++;
-//                }
-//            }
-//            else if (mtr > 0)
-//            {
-//                while(mtr != 0)
-//                {
-//                    LPC_GPIO0->FIOSET |= 1<<25;
-//                    vTaskDelay(1);
-//                    LPC_GPIO0->FIOSET |= 1<<25;
-//                    vTaskDelay(1);
-//                    mtr--;
-//                }
-//            }
 		}
-//       printf("Read: %c, Angle:%i, Speed:%i, On:%i\n", char_in, mtr, spd, on);
 
-		/*
-		 * Do you realize there is a delay here at line 390?????????
-		 */
+
+
 		vTaskDelay(10);
 	}
 
 }
-void vTask5(void *pvParameters) {
+void vTask5(void *pvParameters)
+{
 	/*
 	 * Here is the QEI initialization
 	 */
@@ -517,18 +502,21 @@ void vTask5(void *pvParameters) {
 	}
 
 }
-uint8_t read(void) {
+uint8_t read(void)
+{
 	while (!(LPC_UART2->LSR & 1))
 		;
 	return LPC_UART2->RBR;
 }
-static void EINT3_ISR(void) {
-	if (LPC_GPIOINT->IO2IntStatF & (1 << 6)) {
-
+static void EINT3_ISR(void)
+{
+	if (LPC_GPIOINT->IO2IntStatF & (1 << 6))
+	{
 		LPC_GPIOINT->IO2IntClr |= (1 << 6); //table 123,
 		return;
-	} else if (LPC_GPIOINT->IO2IntStatF & (1 << 6)) {
-
+	}
+	else if (LPC_GPIOINT->IO2IntStatF & (1 << 6))
+	{
 		LPC_GPIOINT->IO2IntClr |= (1 << 7); //table 123,
 		return;
 	}
