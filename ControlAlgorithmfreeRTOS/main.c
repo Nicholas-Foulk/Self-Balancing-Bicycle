@@ -161,9 +161,7 @@ void vTask3(void *pvParameters)
 	stepperInit(2, 0);
 	int steppermotor = 0;
 
-	/*
-	 * Here are our declarations for the PID control loop
-	 */
+	
 	/*
 	 * QEI initial pin/register configuration
 	 */
@@ -225,7 +223,11 @@ void vTask3(void *pvParameters)
 		}
 		return (summation / 5);
 	}
-
+	
+	/*
+	 * Here are our declarations for the PID control loop
+	 */
+	 
 	int mean = 0;
 	mean = calc_target();
 
@@ -248,7 +250,11 @@ void vTask3(void *pvParameters)
 	int fliplim = 75;
 	int uh = 0;
 	int spd = 0;
-
+	
+	/*
+	 * Here is the end of our declarations for the PID control loop
+	 */	
+	 
 	while (1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
