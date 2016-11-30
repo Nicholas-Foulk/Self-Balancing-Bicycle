@@ -314,26 +314,6 @@ void vTask3(void *pvParameters)
 			limit = limit - 1;
 			stepperTurnR(2, 0, 2, 11, CV, 1);
 		}
-		else if (limit == 50 || limit == -50)
-		{
-			if (limit > 0)
-			{
-				while (limit >= 30)
-				{
-					limit = limit - 1;
-					stepperTurnR(2, 0, 2, 11, CV, 1);
-				}
-			}
-			else if (limit < 0)
-			{
-				while (limit <= -30)
-				{
-					limit = limit + 1;
-					stepperTurnF(2, 0, 2, 11, CV, 1);
-				}
-			}
-			vTaskDelay(10);
-		}
 		else if ((targetposition - baloffset) < accY&& accY < (targetposition + baloffset) && limit != 0 && center == FALSE)
 		{
 			flip = 0;
@@ -454,8 +434,6 @@ void vTask4(void *pvParameters)
 		{
 			cent = TRUE;
 		}
-
-
 
 		vTaskDelay(10);
 	}
