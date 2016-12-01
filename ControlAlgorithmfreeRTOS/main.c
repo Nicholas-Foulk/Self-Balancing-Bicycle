@@ -245,24 +245,16 @@ void vTask3(void *pvParameters)
 	int baloffset = 250;
 	int flip = 0;
 	int center = 0;
-<<<<<<< HEAD
 	int steer_CV = 0;
 	int steer_error = 0;
 	int steer_pos = 0;
 	int steer_targetpos = 0;
 
-=======
-	int o = 0;
-	int y = 0;
-	int fliplim = 75;
-	int uh = 0;
-	int spd = 0;
 	
 	/*
 	 * Here is the end of our declarations for the PID control loop
 	 */	
-	 
->>>>>>> df91681e2e152b6f58e1c77e2ce660a2f4d510d3
+
 	while (1)
 	{
 		ACC_Data[0] = SSPReceive(0x28);
@@ -517,10 +509,8 @@ void vTask5(void *pvParameters)
 		}
 		else if(cent)
 		{
-//			steer_targetpos = 0;
-			//steer_pos = LPC_QEI->QEIPOS;
+			steer_targetpos = 0;
 			cent = FALSE;
-			printf("%i, %i\n", steer_pos, steer_CV);
 		}
 
 		//Steering PID Controller
@@ -535,10 +525,12 @@ void vTask5(void *pvParameters)
 				steer_error = steer_pos - steer_targetpos; //target position - current position
 			}
 
-			steer_derivative = steer_error - steer_last_error; //derivative
-			steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
-			steer_CV = (steer_error * Kp) + (steer_integral * Ki) + (steer_derivative * Kd); //Control variable
-			steer_CV = abs(steer_CV/20);
+			steer_CV = 50;
+
+//			steer_derivative = steer_error - steer_last_error; //derivative
+//			steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
+//			steer_CV = (steer_error * Kp) + (steer_integral * Ki) + (steer_derivative * Kd); //Control variable
+//			steer_CV = abs(steer_CV/50);
 
 			if((steer_targetpos < 0) )//|| (steer_targetpos > 40  && LPC_QEI->QEISTAT & 1 == 1 && (steer_pos < steer_targetpos) && steer_pos > 40))//&& (steer_targetpos > 0))
 			{
@@ -560,6 +552,17 @@ void vTask5(void *pvParameters)
 				else
 				{
 					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+				}
+			}
+			else
+			{
+				if(steer_pos < 0)
+				{
+					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+				}
+				else if (steer_pos > 0)
+				{
+					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
 				}
 			}
 			steer_last_error = steer_error;
