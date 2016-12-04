@@ -19,7 +19,7 @@ The phone application is called Bluetooth Serial Controller and can be downloade
  must be pressed again to re-enable control. Press LEFT and RIGHT to turn the steering motor left or right.
 
 
-Useful Links:
+######Useful Links:
 
 
 http://www.nxp.com/products/software-and-tools/software-development-tools/software-tools/lpc-microcontroller-utilities/lpcxpresso-ide-v8.2.2:LPCXPRESSO
@@ -34,7 +34,7 @@ https://www.lpcware.com/system/files/LPCXpresso_IDE_User_Guide.pdf
 http://www.FreeRTOS.org/Documentation/code
 
 
-Repository(also includes controller config):
+######Repository(also includes controller config):
 
 https://github.com/Nicholas-Foulk/Self-Balancing-Bicycle.git 
 
