@@ -1,5 +1,5 @@
-# Self-Balancing-Bicycle
-Dependencies:
+## Self-balancing Bicycle
+######Dependencies:
 In order to run the project code, you need to install LPCXpresso IDE. You also need to import the CMSISv1p30_LPC17xx, 
 freeRTOS_Library, and ControlAlgorithmfreeRTOS projects provided in the ZIP file. This source code will only run on a 
 FreeRTOS-capable ARM microprocessor like the one provided on the LPC1769 microcontroller. The freeRTOS instruction manual 
@@ -7,12 +7,12 @@ comes with links for downloading the necessary project folders for freeRTOS. Lin
 well as reference material are provided below.
 
 
-Running the Project: 
+######Running the Project: 
 To run the code, it must be uploaded to the LPC 1769 through the LPCXpresso IDE. The code can either be run off of a computer
  as a debug instance or flashed onto the board.
 
 
-Manual Control (Bluetooth): 
+######Manual Control (Bluetooth): 
 The phone application is called Bluetooth Serial Controller and can be downloaded for free on Google Play for Android devices.
  A config file for the controller is provided below. To enable the bicycle motor, press GO. To increase or decrease speed tap
  or hold down SPD UP or SPD DWN, respectively. To stop the motor, press STOP. This also disables control of the motor, so GO 
