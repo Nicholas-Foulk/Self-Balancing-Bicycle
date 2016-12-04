@@ -50,20 +50,20 @@ https://github.com/Nicholas-Foulk/Self-Balancing-Bicycle.git
 
 
 
-PWM and GPIO circuit for motor control box
+######PWM and GPIO circuit for motor control box:
 
 The pulse width modulation and general purpose input/output circuit goes with our proxy motor control box circuit, which is used for
 switching between manual and automatic control of the bicycle. The program is run on LPC Expresso IDE and requires a few pins on the 
 LPC 1769 board. The c file, "test_pwm.c" was used for this portion.
 
 
-Accelerometer 
+######Accelerometer: 
 
 Our project has an accelerometer, LSM303D, in our project for collecting data off of the front the bicycle and it is setup
 on the LPC 1769 board using the SPI connections. The c file used for programming our connections is "LSM303D_SPI.c" 
 and is in this repository. 
 
-Control Algorithm
+######Control Algorithm:
 
 Our control algorithm uses data gathered from the accelerometer and controls the stepper motor for our seesaw balancing system. 
 The control algorithm was first implemented on LPC_1769 with no problems under the files CMSIS_CORE_17xx and ControlAlgorithm folders 
