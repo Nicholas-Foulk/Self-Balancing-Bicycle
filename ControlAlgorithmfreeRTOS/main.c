@@ -339,6 +339,7 @@ void mainBalanceTask(void *pvParameters)
 		{
 			center = FALSE;
 			limit = limit - 1;
+<<<<<<< HEAD
 			stepperTurnR(0, 25, 0, 24, steer_CV, 5);
 			steer_targetpos = -20;
 		}
@@ -348,6 +349,14 @@ void mainBalanceTask(void *pvParameters)
 			limit = limit + 1;
 			stepperTurnF(0, 25, 0, 24, steer_CV, 5);
 			steer_targetpos = 20;
+=======
+<<<<<<< HEAD
+			stepperTurnR(2, 0, 2, 11, CV, 1);
+=======
+//			stepperTurnR(2, 0, 2, 11, CV, 1);
+			stepperTurnR(0, 25, 0, 24, 50, 5);
+>>>>>>> 21fc8f6313ece980740de60c85571f0c0db5644f
+>>>>>>> 2bc25eddf27da8af5a68b4fb8aea035bcd433f3d
 		}
 		else if ((mean-200) <= accY && accY <= (mean+200))
 		{
