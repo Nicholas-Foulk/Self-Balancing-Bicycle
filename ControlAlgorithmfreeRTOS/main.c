@@ -187,30 +187,35 @@ void mainBalanceTask(void *pvParameters)
 	int mean = 0;
 	mean = calc_target();
 
+	int turnoffset = 800;
+	int baloffset = 50;
+	int center = 0;
+
 	/*Variables for steering*/
-	int steer_derivative = 0;
-	int steer_integral = 0;
-	int steer_CV = 0;
-	int steer_error = 0;
-	int steer_last_error = 0;
-	int steer_pos = 0;
-	int steer_targetpos = 0;
+//	int steer_derivative = 0;
+//	int steer_integral = 0;
+//	int steer_CV = 0;
+//	int steer_error = 0;
+//	int steer_last_error = mean;
+//	int steer_pos = 0;
+//	int steer_targetpos = 0;
+//	int steer_Kp = 4;  //constant variable used for multiplying error
+//	int steer_Ki = 1;  //constant variable used for multiplying integral
+//	int steer_Kd = 2;  //constant variable used for multiplying derivative
 
 	/*Variables for balancing mechanism*/
 
+	int pos = 0;
 	int last_error = mean;
-	int targetposition = mean;  //out set target position
+	int targetpos = mean;  //out set target position
 	int integral = 0;
-	int Kp = 4;  //constant variable used for multiplying error
-	int Ki = 1;  //constant variable used for multiplying integral
-	int Kd = 2;  //constant variable used for multiplying derivative
 	int derivative = 0;
 	int error = 0;
 	int CV = 0;
 	int limit = 0;
-	int turnoffset = 800;
-	int baloffset = 50;
-	int center = 0;
+	int Kp = 4;  //constant variable used for multiplying error
+	int Ki = 1;  //constant variable used for multiplying integral
+	int Kd = 2;  //constant variable used for multiplying derivative
 	
 	/*
 	 * Here is the end of our declarations for the PID control loop
@@ -232,7 +237,7 @@ void mainBalanceTask(void *pvParameters)
 
 		if (cent == TRUE)	//reset all values when motor is re-centered
 		{
-			steer_targetpos = 0;
+			targetpos = 0;
 			mean = calc_target();
 			cent = FALSE;
 			error = 0;
@@ -245,33 +250,33 @@ void mainBalanceTask(void *pvParameters)
 
 		if(LPC_QEI->QEIPOS > 40)
 		{
-			steer_pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
+			pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
 		}
 		else
 		{
-			steer_pos = LPC_QEI->QEIPOS; //Retreive position
+			pos = LPC_QEI->QEIPOS; //Retreive position
 		}
-		if(steer_targetpos > 40)
+		if(targetpos > 40)
 		{
-			steer_error = steer_pos - (80 - steer_targetpos); //target position - current position
+			error = pos - (80 - targetpos); //target position - current position
 		}
-		else if(steer_targetpos < 40)
+		else if(targetpos < 40)
 		{
-			steer_error = steer_pos - steer_targetpos; //target position - current position
+			error = pos - targetpos; //target position - current position
 		}
 
-		steer_derivative = steer_error - steer_last_error; //derivative
-		steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
-		steer_CV = (steer_error * Kp) + (steer_integral * Ki) + (steer_derivative * Kd); //Control variable
-		steer_CV = abs(steer_CV/50);
+		derivative = error - last_error; //derivative
+		integral = integral + error;         //integral portion of the algorithm
+		CV = (error * Kp) + (integral * Ki) + (derivative * Kd); //Control variable
+		CV = abs(CV/50);
 
-		if(steer_CV < 10)
+		if(CV < 10)
 		{
-			steer_CV = 10;	//Max speed
+			CV = 10;	//Max speed
 		}
-		else if(steer_CV > 50)
+		else if(CV > 50)
 		{
-			steer_CV = 50;	//Min speed
+			CV = 50;	//Min speed
 		}
 
 		if (accY <= mean-turnoffset && limit > -50)
@@ -289,7 +294,7 @@ void mainBalanceTask(void *pvParameters)
 		}
 		else if ((mean-baloffset) < accY && accY < (mean+baloffset) && center == FALSE)
 		{
-			steer_targetpos = 0;
+			targetpos = 0;
 			while (limit != 0)
 			{
 
@@ -311,15 +316,16 @@ void mainBalanceTask(void *pvParameters)
 		}
 		else if(steer_pos == steer_targetpos)
 		{
-			steer_error = 0;
-			steer_CV = 0;
-			steer_last_error = 0;
-			steer_integral = 0;
+			error = 0;
+			CV = 0;
+			last_error = 0;
+			integral = 0;
 		}
 		else
 		{
 			//do nothing
 		}
+		last_error = error;
 
 
 /*		Steering code
@@ -415,7 +421,7 @@ void mainBalanceTask(void *pvParameters)
 //		}
 //		printf("%i, %i\n", steer_pos, steer_targetpos);
 
-		steer_last_error = steer_error;
+//		steer_last_error = steer_error;
 	}
 
 	return;
