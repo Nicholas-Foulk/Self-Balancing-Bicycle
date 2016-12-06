@@ -191,18 +191,6 @@ void mainBalanceTask(void *pvParameters)
 	int baloffset = 50;
 	int center = 0;
 
-	/*Variables for steering*/
-//	int steer_derivative = 0;
-//	int steer_integral = 0;
-//	int steer_CV = 0;
-//	int steer_error = 0;
-//	int steer_last_error = mean;
-//	int steer_pos = 0;
-//	int steer_targetpos = 0;
-//	int steer_Kp = 4;  //constant variable used for multiplying error
-//	int steer_Ki = 1;  //constant variable used for multiplying integral
-//	int steer_Kd = 2;  //constant variable used for multiplying derivative
-
 	/*Variables for balancing mechanism*/
 
 	int pos = 0;
@@ -327,110 +315,6 @@ void mainBalanceTask(void *pvParameters)
 		}
 		last_error = error;
 
-
-/*		Steering code
-		if((mean-400) <= accY && accY <= (mean+400))
-		{
-//			steer_targetpos = 0;
-//			center = TRUE;
-//			vTaskDelay(10);
-		}
-		else if (accY < mean-200)
-		{
-			center = FALSE;
-			limit = limit - 1;
-<<<<<<< HEAD
-			stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-			steer_targetpos = -20;
-		}
-		else if (accY > mean+200)
-		{
-			center = FALSE;
-			limit = limit + 1;
-			stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-			steer_targetpos = 20;
-=======
-<<<<<<< HEAD
-			stepperTurnR(2, 0, 2, 11, CV, 1);
-=======
-//			stepperTurnR(2, 0, 2, 11, CV, 1);
-			stepperTurnR(0, 25, 0, 24, 50, 5);
->>>>>>> 21fc8f6313ece980740de60c85571f0c0db5644f
->>>>>>> 2bc25eddf27da8af5a68b4fb8aea035bcd433f3d
-		}
-		else if ((mean-200) <= accY && accY <= (mean+200))
-		{
-			steer_targetpos = 0;
-			while (limit != 0)
-			{
-
-				if (limit > 0)
-				{
-					limit = limit - 1;
-					stepperTurnF(2, 0, 2, 11, steer_CV, 5);
-//					stepperTurnR(0, 25, 0, 24, 50, 5);
-					vTaskDelay(10);
-				}
-				else if (limit < 0)
-				{
-					limit = limit + 1;
-					stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-//					stepperTurnF(0, 25, 0, 24, 50, 5);
-					vTaskDelay(10);
-				}
-			}
-			center = TRUE;
-			vTaskDelay(10);
-		}
-		else
-		{
-			steer_error = 0;
-			steer_CV = 0;
-			steer_last_error = 0;
-			steer_integral = 0;
-		}
-
-		*/
-
-//		if(steer_targetpos != steer_pos)
-//		{
-//			if((steer_targetpos < 0) )
-//			{
-//				if(steer_pos < steer_targetpos)
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//			else if((steer_targetpos > 0))
-//			{
-//				if(steer_pos > steer_targetpos)
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//			else if(steer_targetpos == 0)
-//			{
-//				if(steer_pos < 0)
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else if (steer_pos > 0)
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//		}
-//		printf("%i, %i\n", steer_pos, steer_targetpos);
-
-//		steer_last_error = steer_error;
 	}
 
 	return;
