@@ -93,7 +93,7 @@ int main(void)
 
 	xTaskCreate(MainBalanceTask, "MainBalanceTask", 720, NULL, 1, NULL );
 	xTaskCreate(BluetoothTask, "BluetoothTask", 240, NULL, 1, NULL );
-	xTaskCreate(vTask5, "Task 5", 1080, NULL, 1, NULL);
+//	xTaskCreate(vTask5, "Task 5", 1080, NULL, 1, NULL);
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
 
@@ -106,7 +106,7 @@ int main(void)
 }
 
 /*-----------------------------------------------------------*/
-void mainBalanceTask(void *pvParameters)
+void MainBalanceTask(void *pvParameters)
 {
 	LPC_GPIO2->FIODIR |= 1 << 11; //direction initialization
 	SSP_init();
@@ -177,7 +177,7 @@ void mainBalanceTask(void *pvParameters)
 			accZ = (int) (ACC_Data[5] << 8) | ACC_Data[4];
 			summation = summation + accY;
 		}
-		return -((summation/5) - 2600);
+		return -((summation/5) - 1400);
 	}
 	
 	/*
@@ -185,37 +185,38 @@ void mainBalanceTask(void *pvParameters)
 	 */
 	 
 	int mean = 0;
-	mean = calc_target();
+	int steer_initial = 0;
+	steer_initial = mean = calc_target();
 
 	int turnoffset = 800;
 	int baloffset = 50;
 	int center = 0;
 
 	/*Variables for steering*/
-//	int steer_derivative = 0;
-//	int steer_integral = 0;
-//	int steer_CV = 0;
-//	int steer_error = 0;
-//	int steer_last_error = mean;
-//	int steer_pos = 0;
-//	int steer_targetpos = 0;
-//	int steer_Kp = 4;  //constant variable used for multiplying error
-//	int steer_Ki = 1;  //constant variable used for multiplying integral
-//	int steer_Kd = 2;  //constant variable used for multiplying derivative
+	int steer_derivative = 0;
+	int steer_integral = 0;
+	int steer_CV = 0;
+	int steer_error = 0;
+	int steer_last_error = mean;
+	int steer_pos = 0;
+	int steer_targetpos = 0;
+	int steer_Kp = 4;  //constant variable used for multiplying error
+	int steer_Ki = 1;  //constant variable used for multiplying integral
+	int steer_Kd = 2;  //constant variable used for multiplying derivative
 
 	/*Variables for balancing mechanism*/
 
-	int pos = 0;
-	int last_error = mean;
-	int targetpos = mean;  //out set target position
-	int integral = 0;
-	int derivative = 0;
-	int error = 0;
-	int CV = 0;
-	int limit = 0;
-	int Kp = 4;  //constant variable used for multiplying error
-	int Ki = 1;  //constant variable used for multiplying integral
-	int Kd = 2;  //constant variable used for multiplying derivative
+//	int pos = 0;
+//	int last_error = mean;
+//	int targetpos = mean;  //out set target position
+//	int integral = 0;
+//	int derivative = 0;
+//	int error = 0;
+//	int CV = 0;
+//	int limit = 0;
+//	int Kp = 4;  //constant variable used for multiplying error
+//	int Ki = 1;  //constant variable used for multiplying integral
+//	int Kd = 2;  //constant variable used for multiplying derivative
 	
 	/*
 	 * Here is the end of our declarations for the PID control loop
@@ -233,156 +234,169 @@ void mainBalanceTask(void *pvParameters)
 		accY = (int) (ACC_Data[3] << 8) | ACC_Data[2];
 		//accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		accY = -(accY - 2600);
+		accY = -(accY - 1400);
+/*
+//		if (cent == TRUE)	//reset all values when motor is re-centered
+//		{
+//			targetpos = 0;
+//			mean = calc_target();
+//			cent = FALSE;
+//			error = 0;
+//			limit = 0;
+//			CV = 0;
+//			integral = 0;
+//			LPC_QEI->QEICON |= 1;
+//		}
+//
+//
+//		if(LPC_QEI->QEIPOS > 40)
+//		{
+//			pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
+//		}
+//		else
+//		{
+//			pos = LPC_QEI->QEIPOS; //Retreive position
+//		}
+//		if(targetpos > 40)
+//		{
+//			error = pos - (80 - targetpos); //target position - current position
+//		}
+//		else if(targetpos < 40)
+//		{
+//			error = pos - targetpos; //target position - current position
+//		}
+
+//Balancing Code
+
+//		derivative = error - last_error; //derivative
+//		integral = integral + error;         //integral portion of the algorithm
+//		CV = (error * Kp) + (integral * Ki) + (derivative * Kd); //Control variable
+//		CV = abs(CV/50);
+//
+//		if(CV < 10)
+//		{
+//			CV = 10;	//Max speed
+//		}
+//		else if(CV > 50)
+//		{
+//			CV = 50;	//Min speed
+//		}
+//
+//		if (accY <= mean-turnoffset && limit > -50)
+//		{
+//			center = FALSE;
+//			limit = limit - 1;
+//			stepperTurnF(2, 0, 2, 11, steer_CV, 5);
+//		}
+//		else if (accY >= mean+turnoffset && limit < 50)
+//		{
+//			center = FALSE;
+//			limit = limit + 1;
+//			stepperTurnR(2, 0, 2, 11, steer_CV, 5);
+//
+//		}
+//		else if ((mean-baloffset) < accY && accY < (mean+baloffset) && center == FALSE)
+//		{
+//			targetpos = 0;
+//			while (limit != 0)
+//			{
+//
+//				if (limit > 0)
+//				{
+//					limit = limit - 1;
+//					stepperTurnF(2, 0, 2, 11, steer_CV, 5);
+//					vTaskDelay(10);
+//				}
+//				else if (limit < 0)
+//				{
+//					limit = limit + 1;
+//					stepperTurnR(2, 0, 2, 11, steer_CV, 5);
+//					vTaskDelay(10);
+//				}
+//			}
+//			center = TRUE;
+//			vTaskDelay(10);
+//		}
+//		else if(steer_pos == steer_targetpos)
+//		{
+//			error = 0;
+//			CV = 0;
+//			last_error = 0;
+//			integral = 0;
+//		}
+//		else
+//		{
+//			//do nothing
+//		}
+//		last_error = error;
+*/
+
+//		Steering code <--F R-->
 
 		if (cent == TRUE)	//reset all values when motor is re-centered
 		{
-			targetpos = 0;
-			mean = calc_target();
+			steer_targetpos = 0;
+			steer_initial = calc_target();
 			cent = FALSE;
-			error = 0;
-			limit = 0;
-			CV = 0;
-			integral = 0;
+			steer_error = 0;
+			steer_CV = 0;
+			steer_integral = 0;
 			LPC_QEI->QEICON |= 1;
 		}
 
-
 		if(LPC_QEI->QEIPOS > 40)
 		{
-			pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
+			steer_pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
 		}
 		else
 		{
-			pos = LPC_QEI->QEIPOS; //Retreive position
+			steer_pos = LPC_QEI->QEIPOS; //Retreive position
 		}
-		if(targetpos > 40)
+		if(steer_targetpos > 40)
 		{
-			error = pos - (80 - targetpos); //target position - current position
+			steer_error = steer_pos - (80 - steer_targetpos); //target position - current position
 		}
-		else if(targetpos < 40)
+		else if(steer_targetpos < 40)
 		{
-			error = pos - targetpos; //target position - current position
+			steer_error = steer_pos - steer_targetpos; //target position - current position
 		}
 
-		derivative = error - last_error; //derivative
-		integral = integral + error;         //integral portion of the algorithm
-		CV = (error * Kp) + (integral * Ki) + (derivative * Kd); //Control variable
-		CV = abs(CV/50);
+		steer_error = steer_pos - steer_targetpos; //target position - current position
+		steer_derivative = steer_error - steer_last_error; //derivative
+		steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
+		steer_CV = (steer_error * steer_Kp) + (steer_integral * steer_Ki) + (steer_derivative * steer_Kd); //Control variable
+		steer_CV = abs(500/steer_CV);
 
-		if(CV < 10)
+		if(steer_CV < 50)
 		{
-			CV = 10;	//Max speed
+			steer_CV = 50;
 		}
-		else if(CV > 50)
+		else if(steer_CV > 450)
 		{
-			CV = 50;	//Min speed
+			steer_CV = 450;
 		}
 
-		if (accY <= mean-turnoffset && limit > -50)
-		{
-			center = FALSE;
-			limit = limit - 1;
-			stepperTurnF(2, 0, 2, 11, steer_CV, 5);
-		}
-		else if (accY >= mean+turnoffset && limit < 50)
-		{
-			center = FALSE;
-			limit = limit + 1;
-			stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-
-		}
-		else if ((mean-baloffset) < accY && accY < (mean+baloffset) && center == FALSE)
-		{
-			targetpos = 0;
-			while (limit != 0)
-			{
-
-				if (limit > 0)
-				{
-					limit = limit - 1;
-					stepperTurnF(2, 0, 2, 11, steer_CV, 5);
-					vTaskDelay(10);
-				}
-				else if (limit < 0)
-				{
-					limit = limit + 1;
-					stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-					vTaskDelay(10);
-				}
-			}
-			center = TRUE;
-			vTaskDelay(10);
-		}
-		else if(steer_pos == steer_targetpos)
-		{
-			error = 0;
-			CV = 0;
-			last_error = 0;
-			integral = 0;
-		}
-		else
-		{
-			//do nothing
-		}
-		last_error = error;
-
-
-/*		Steering code
-		if((mean-400) <= accY && accY <= (mean+400))
-		{
-//			steer_targetpos = 0;
-//			center = TRUE;
-//			vTaskDelay(10);
-		}
-		else if (accY < mean-200)
-		{
-			center = FALSE;
-			limit = limit - 1;
-<<<<<<< HEAD
-			stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-			steer_targetpos = -20;
-		}
-		else if (accY > mean+200)
-		{
-			center = FALSE;
-			limit = limit + 1;
-			stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-			steer_targetpos = 20;
-=======
-<<<<<<< HEAD
-			stepperTurnR(2, 0, 2, 11, CV, 1);
-=======
-//			stepperTurnR(2, 0, 2, 11, CV, 1);
-			stepperTurnR(0, 25, 0, 24, 50, 5);
->>>>>>> 21fc8f6313ece980740de60c85571f0c0db5644f
->>>>>>> 2bc25eddf27da8af5a68b4fb8aea035bcd433f3d
-		}
-		else if ((mean-200) <= accY && accY <= (mean+200))
+		if((steer_initial-500) <= accY && accY <= (steer_initial+500))
 		{
 			steer_targetpos = 0;
-			while (limit != 0)
-			{
-
-				if (limit > 0)
-				{
-					limit = limit - 1;
-					stepperTurnF(2, 0, 2, 11, steer_CV, 5);
-//					stepperTurnR(0, 25, 0, 24, 50, 5);
-					vTaskDelay(10);
-				}
-				else if (limit < 0)
-				{
-					limit = limit + 1;
-					stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-//					stepperTurnF(0, 25, 0, 24, 50, 5);
-					vTaskDelay(10);
-				}
-			}
 			center = TRUE;
 			vTaskDelay(10);
+
 		}
-		else
+		else if (accY < steer_initial-800 && steer_pos > -15|| accY > steer_initial+800 && steer_pos < 15 )
+		{
+			center = FALSE;
+			steer_targetpos = accY/100;
+			if(steer_targetpos > 15)
+			{
+				steer_targetpos = 15;
+			}
+			else if( steer_targetpos < -15)
+			{
+				steer_targetpos = -15;
+			}
+		}
+		else if(steer_pos == 0)
 		{
 			steer_error = 0;
 			steer_CV = 0;
@@ -390,47 +404,53 @@ void mainBalanceTask(void *pvParameters)
 			steer_integral = 0;
 		}
 
-		*/
 
-//		if(steer_targetpos != steer_pos)
-//		{
-//			if((steer_targetpos < 0) )
-//			{
-//				if(steer_pos < steer_targetpos)
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//			else if((steer_targetpos > 0))
-//			{
-//				if(steer_pos > steer_targetpos)
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//			else if(steer_targetpos == 0)
-//			{
-//				if(steer_pos < 0)
-//				{
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
-//				}
-//				else if (steer_pos > 0)
-//				{
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
-//				}
-//			}
-//		}
+		if(steer_targetpos < 0)
+		{
+			if(steer_pos < steer_targetpos)
+			{
+				stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+			}
+			else
+			{
+				stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+			}
+		}
+		else if(steer_targetpos > 0)
+		{
+			if(steer_pos > steer_targetpos)
+			{
+				stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+			}
+			else
+			{
+				stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+			}
+		}
+		else
+		{
+			if(steer_pos < 0)
+			{
+				stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+			}
+			else if (steer_pos > 0)
+			{
+				stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+			}
+		}
+
+		if(steer_pos >= 10 || steer_pos <= -10)
+		{
+			setPWMspeed(1, spd+20);
+		}
+		else
+		{
+			setPWMspeed(1, spd);
+		}
+
 //		printf("%i, %i\n", steer_pos, steer_targetpos);
 
-//		steer_last_error = steer_error;
+		steer_last_error = steer_error;
 	}
 
 	return;
@@ -484,7 +504,7 @@ void BluetoothTask(void *pvParameters)
 
 		if (char_in == 'G')
 		{
-			spd = 60;
+			spd = 66;
 			on = TRUE;
 		}
 		else if (char_in == 'S')
@@ -492,11 +512,11 @@ void BluetoothTask(void *pvParameters)
 			spd = 60;
 			on = FALSE;
 		}
-		else if (char_in == 'U' && on && spd < 100)
+		else if (char_in == 'U' && on && spd < 90)
 		{
 			spd = spd + 2;
 		}
-		else if (char_in == 'D' && on && spd > 60)
+		else if (char_in == 'D' && on && spd > 66)
 		{
 			spd = spd - 2;
 		}
@@ -579,6 +599,7 @@ void vTask5(void *pvParameters) //task to debug QEI
 	while (1)
 	{
 
+
 		if(LPC_QEI->QEIPOS > 40)
 		{
 			steer_pos = (-80+LPC_QEI->QEIPOS); //Retreive position
@@ -592,7 +613,7 @@ void vTask5(void *pvParameters) //task to debug QEI
 		{
 //			if(steer_targetpos < -20)
 //			{
-				steer_targetpos = 2;
+				steer_targetpos = 20;
 //			}
 			right = FALSE;
 //			printf("%i, %i\n", steer_pos, steer_targetpos);
@@ -601,7 +622,7 @@ void vTask5(void *pvParameters) //task to debug QEI
 		{
 //			if(steer_targetpos > 20)
 //			{
-				steer_targetpos = -2;
+				steer_targetpos = -20;
 			//}
 //			printf("%i, %i\n", steer_pos, steer_targetpos);
 			left = FALSE;
@@ -616,28 +637,33 @@ void vTask5(void *pvParameters) //task to debug QEI
 		//Steering PID Controller
 		if(steer_pos != steer_targetpos)
 		{
-			if(steer_targetpos > 0)
+			if(steer_targetpos > 40)
 			{
-				steer_error = steer_pos - (5 - steer_targetpos); //target position - current position
+				steer_error = steer_pos - (80 - steer_targetpos); //target position - current position
 			}
-			else if(steer_targetpos < 0)
+			else if(steer_targetpos < 40)
 			{
 				steer_error = steer_pos - steer_targetpos; //target position - current position
 			}
 
+			steer_error = steer_pos - steer_targetpos; //target position - current position
 			steer_derivative = steer_error - steer_last_error; //derivative
 			steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
 			steer_CV = (steer_error * Kp) + (steer_integral * Ki) + (steer_derivative * Kd); //Control variable
-			steer_CV = abs(1000/steer_CV);
+			steer_CV = abs(500/steer_CV);
 
-			if(steer_CV < 75)
+
+//			printf("%i:%i\n", steer_CV, steer_error);
+
+			if(steer_CV < 20)
 			{
-				steer_CV = 75;
+				steer_CV = 20;
 			}
-			else if(steer_CV > 500)
+			else if(steer_CV > 450)
 			{
-				steer_CV = 500;
+				steer_CV = 450;
 			}
+
 
 //			printf("%i | %i\n", steer_error, steer_CV);
 
@@ -645,39 +671,39 @@ void vTask5(void *pvParameters) //task to debug QEI
 			{
 				if(steer_pos < steer_targetpos)
 				{
-					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
 				}
 				else
 				{
-					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
 				}
 			}
 			else if((steer_targetpos > 0))
 			{
 				if(steer_pos > steer_targetpos)
 				{
-					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
 				}
 				else
 				{
-					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
 				}
 			}
 			else
 			{
 				if(steer_pos < 0)
 				{
-					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnR(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnR(0, 25, 0, 24, steer_CV, 5);
 				}
 				else if (steer_pos > 0)
 				{
-					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
-//					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
+//					stepperTurnF(2, 0, 2, 11, steer_CV, 1);
+					stepperTurnF(0, 25, 0, 24, steer_CV, 5);
 				}
 			}
 			steer_last_error = steer_error;
