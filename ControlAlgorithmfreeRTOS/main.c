@@ -83,6 +83,10 @@ int is_Rx_full();
 int is_Rx_not_empty();
 int is_busy();
 
+//For second encoder
+void EINT3_IRQHandler();
+int poscounter = 0;
+
 /*-------------------------- ---------------------------------*/
 
 
@@ -155,6 +159,17 @@ void MainBalanceTask(void *pvParameters)
 
 	LPC_QEI->FILTER = 0x100;
 	LPC_QEI->QEICONF |= 0x1;
+
+	//Intterupt Config for second encoder, P2.10 channel A || P2.12 channel B
+
+//	LPC_PINCON->PINSEL4 |= 0x3<<20; //Pin 2.10 is EINT0
+//	LPC_PINCON->PINSEL4 |= 0x3<<24; //Pin 2.12 is EINT2
+
+	LPC_GPIOINT->IO2IntEnR = 0x33<<10;	//Enable rising edge interrupts on pins 2.10 & 2.12
+	LPC_GPIOINT->IO2IntEnF = 0x33<<10;	//Enable falling edge interrupts on pins 2.10 & 2.12
+
+
+
 	 /*
 	  * End of the QEI initialization section
 	  */
@@ -188,6 +203,7 @@ void MainBalanceTask(void *pvParameters)
 	int steer_initial = 0;
 	steer_initial = mean = calc_target();
 
+	int init = 0;
 	int turnoffset = 800;
 	int baloffset = 50;
 	int center = 0;
@@ -200,6 +216,7 @@ void MainBalanceTask(void *pvParameters)
 	int steer_last_error = mean;
 	int steer_pos = 0;
 	int steer_targetpos = 0;
+	int steer_correcting = FALSE;
 	int steer_Kp = 4;  //constant variable used for multiplying error
 	int steer_Ki = 1;  //constant variable used for multiplying integral
 	int steer_Kd = 2;  //constant variable used for multiplying derivative
@@ -234,7 +251,10 @@ void MainBalanceTask(void *pvParameters)
 		accY = (int) (ACC_Data[3] << 8) | ACC_Data[2];
 		//accZ = (int)(ACC_Data[5] << 8) | ACC_Data[4];
 
-		accY = -(accY - 1400);
+		accY = -(accY - 1600);
+
+
+
 /*
 //		if (cent == TRUE)	//reset all values when motor is re-centered
 //		{
@@ -365,45 +385,61 @@ void MainBalanceTask(void *pvParameters)
 		steer_derivative = steer_error - steer_last_error; //derivative
 		steer_integral = steer_integral + steer_error;         //integral portion of the algorithm
 		steer_CV = (steer_error * steer_Kp) + (steer_integral * steer_Ki) + (steer_derivative * steer_Kd); //Control variable
-		steer_CV = abs(500/steer_CV);
 
-		if(steer_CV < 50)
+		if(steer_correcting)
 		{
-			steer_CV = 50;
-		}
-		else if(steer_CV > 450)
-		{
-			steer_CV = 450;
-		}
-
-		if((steer_initial-500) <= accY && accY <= (steer_initial+500))
-		{
-			steer_targetpos = 0;
-			center = TRUE;
-			vTaskDelay(10);
-
-		}
-		else if (accY < steer_initial-800 && steer_pos > -15|| accY > steer_initial+800 && steer_pos < 15 )
-		{
-			center = FALSE;
-			steer_targetpos = accY/100;
-			if(steer_targetpos > 15)
+			steer_CV = abs(100/steer_CV);
+			if(steer_CV < 10)
 			{
-				steer_targetpos = 15;
+				steer_CV = 10;
 			}
-			else if( steer_targetpos < -15)
+			else if(steer_CV > 70)
 			{
-				steer_targetpos = -15;
+				steer_CV = 70;
 			}
 		}
-		else if(steer_pos == 0)
+		else
 		{
-			steer_error = 0;
-			steer_CV = 0;
-			steer_last_error = 0;
-			steer_integral = 0;
+			steer_CV = abs(500/steer_CV);
+			if(steer_CV < 50)
+			{
+				steer_CV = 50;
+			}
+			else if(steer_CV > 450)
+			{
+				steer_CV = 450;
+			}
 		}
+		if(steer_correcting == FALSE)
+		{
+			if((steer_initial-500) <= accY && accY <= (steer_initial+500))
+			{
+				steer_targetpos = 0;
+				center = TRUE;
+				vTaskDelay(10);
 
+			}
+			else if (accY < steer_initial-800 && steer_pos > -10|| accY > steer_initial+800 && steer_pos < 10)
+			{
+				center = FALSE;
+				steer_targetpos = accY/100;
+				if(steer_targetpos > 10)
+				{
+					steer_targetpos = 10;
+				}
+				else if( steer_targetpos < -10)
+				{
+					steer_targetpos = -10;
+				}
+			}
+			else if(steer_pos == 0)
+			{
+				steer_error = 0;
+				steer_CV = 0;
+				steer_last_error = 0;
+				steer_integral = 0;
+			}
+		}
 
 		if(steer_targetpos < 0)
 		{
@@ -439,13 +475,20 @@ void MainBalanceTask(void *pvParameters)
 			}
 		}
 
-		if(steer_pos >= 10 || steer_pos <= -10)
+		if((steer_pos >= 5 || steer_pos <= -5) && steer_correcting == FALSE && spd > 66)
 		{
 			setPWMspeed(1, spd+20);
+			steer_targetpos = 5;
+			steer_correcting = TRUE;
 		}
-		else
+		else if(steer_correcting == TRUE && steer_pos >= 5)
+		{
+			steer_targetpos = 0;
+		}
+		else if ((steer_pos <= 1 && steer_pos >= -1) && steer_correcting == TRUE)
 		{
 			setPWMspeed(1, spd);
+			steer_correcting = FALSE;
 		}
 
 //		printf("%i, %i\n", steer_pos, steer_targetpos);
@@ -504,12 +547,12 @@ void BluetoothTask(void *pvParameters)
 
 		if (char_in == 'G')
 		{
-			spd = 66;
+			spd = 66;	//bicycle begins to speed up at 68
 			on = TRUE;
 		}
 		else if (char_in == 'S')
 		{
-			spd = 60;
+			spd = 0;
 			on = FALSE;
 		}
 		else if (char_in == 'U' && on && spd < 90)
@@ -927,3 +970,28 @@ int is_busy() {
 	return ((reg & (1 << 4)) >> 4);
 }
 
+void EINT3_IRQHandler()
+{
+	//Rising edge detect
+	if(LPC_GPIOINT->IO2IntStatR & (0x1<<10))
+	{
+		poscounter++;
+		LPC_GPIOINT->IO2IntClr |= 0x1<<10;
+	}
+	else if(LPC_GPIOINT->IO2IntStatR & (0x1<<12))
+	{
+		poscounter++;
+		LPC_GPIOINT->IO2IntClr |= 0x1<<12;
+	}
+	//Falling edge detect
+	else if(LPC_GPIOINT->IO2IntStatF & (0x1<<10))
+	{
+		poscounter++;
+		LPC_GPIOINT->IO2IntClr |= 0x1<<10;
+	}
+	else if(LPC_GPIOINT->IO2IntStatF & (0x1<<10))
+	{
+		poscounter++;
+		LPC_GPIOINT->IO2IntClr |= 0x1<<12;
+	}
+}
