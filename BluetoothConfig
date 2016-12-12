@@ -1,0 +1,25 @@
+NAME,GO,SPD UP,STOP,LEFT,SPD DWN,RIGHT,SL,RECENTER,SR,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,
+
+CMD_TYPE,A,
+
+CMD_ASCII,G,U,S,L,D,R,P,C,O,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,
+
+CMD_HEX,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,
+
+ENABLE_STOPCMD_ASCII,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,
+
+ENABLE_STOPCMD_HEX,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,
+
+STOPCMD_ASCII,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,def,
+
+STOPCMD_HEX,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,
+
+VISIBLE,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,
+
+REPEAT_TYPE,t,
+
+REPEAT_INTERVAL,1,
+
+REPEATABLE,t,t,t,t,t,t,f,t,f,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,
+
+REPEAT_INTERVAL_INDIVIDUAL,100,100,100,1,100,1,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,
