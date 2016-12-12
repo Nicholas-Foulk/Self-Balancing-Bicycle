@@ -216,6 +216,7 @@ void MainBalanceTask(void *pvParameters)
 	int steer_last_error = mean;
 	int steer_pos = 0;
 	int steer_targetpos = 0;
+	int waiting_for_balance = FALSE;
 	int steer_correcting = FALSE;
 	int steer_Kp = 4;  //constant variable used for multiplying error
 	int steer_Ki = 1;  //constant variable used for multiplying integral
@@ -358,11 +359,15 @@ void MainBalanceTask(void *pvParameters)
 			steer_targetpos = 0;
 			steer_initial = calc_target();
 			cent = FALSE;
+			steer_correcting = FALSE;
+			waiting_for_balance = FALSE;
 			steer_error = 0;
 			steer_CV = 0;
 			steer_integral = 0;
 			LPC_QEI->QEICON |= 1;
 		}
+
+
 
 		if(LPC_QEI->QEIPOS > 40)
 		{
@@ -410,9 +415,9 @@ void MainBalanceTask(void *pvParameters)
 				steer_CV = 450;
 			}
 		}
-		if(steer_correcting == FALSE)
+		if(steer_correcting == FALSE && waiting_for_balance == FALSE)
 		{
-			if((steer_initial-500) <= accY && accY <= (steer_initial+500))
+			if((steer_initial-300) <= accY && accY <= (steer_initial+300))
 			{
 				steer_targetpos = 0;
 				center = TRUE;
@@ -427,7 +432,7 @@ void MainBalanceTask(void *pvParameters)
 				{
 					steer_targetpos = 10;
 				}
-				else if( steer_targetpos < -10)
+				else if(steer_targetpos < -10)
 				{
 					steer_targetpos = -10;
 				}
@@ -475,15 +480,24 @@ void MainBalanceTask(void *pvParameters)
 			}
 		}
 
-		if((steer_pos >= 5 || steer_pos <= -5) && steer_correcting == FALSE && spd > 66)
+		if((steer_pos >= 5 || steer_pos <= -5) && steer_correcting == FALSE && waiting_for_balance == FALSE && spd > 66)
 		{
 			setPWMspeed(1, spd+20);
-			steer_targetpos = 5;
-			steer_correcting = TRUE;
+			if(steer_pos >= 5)
+			{
+				steer_targetpos = 8;
+			}
+			else if(steer_targetpos <= -5)
+			{
+				steer_targetpos = -8;
+			}
+			waiting_for_balance = TRUE;
 		}
-		else if(steer_correcting == TRUE && steer_pos >= 5)
+		else if(waiting_for_balance == TRUE && accY <= 300 && accY >= -300)
 		{
+			waiting_for_balance = FALSE;
 			steer_targetpos = 0;
+			steer_correcting = TRUE;
 		}
 		else if ((steer_pos <= 1 && steer_pos >= -1) && steer_correcting == TRUE)
 		{
@@ -980,7 +994,7 @@ void EINT3_IRQHandler()
 	}
 	else if(LPC_GPIOINT->IO2IntStatR & (0x1<<12))
 	{
-		poscounter++;
+		poscounter--;
 		LPC_GPIOINT->IO2IntClr |= 0x1<<12;
 	}
 	//Falling edge detect
