@@ -86,6 +86,7 @@ int is_busy();
 //For second encoder
 void EINT3_IRQHandler();
 int poscounter = 0;
+char first_fall = 0;
 
 /*-------------------------- ---------------------------------*/
 
@@ -162,13 +163,8 @@ void MainBalanceTask(void *pvParameters)
 
 	//Intterupt Config for second encoder, P2.10 channel A || P2.12 channel B
 
-//	LPC_PINCON->PINSEL4 |= 0x3<<20; //Pin 2.10 is EINT0
-//	LPC_PINCON->PINSEL4 |= 0x3<<24; //Pin 2.12 is EINT2
-
 	LPC_GPIOINT->IO2IntEnR = 0x33<<10;	//Enable rising edge interrupts on pins 2.10 & 2.12
 	LPC_GPIOINT->IO2IntEnF = 0x33<<10;	//Enable falling edge interrupts on pins 2.10 & 2.12
-
-
 
 	 /*
 	  * End of the QEI initialization section
@@ -224,17 +220,16 @@ void MainBalanceTask(void *pvParameters)
 
 	/*Variables for balancing mechanism*/
 
-//	int pos = 0;
-//	int last_error = mean;
-//	int targetpos = mean;  //out set target position
-//	int integral = 0;
-//	int derivative = 0;
-//	int error = 0;
-//	int CV = 0;
-//	int limit = 0;
-//	int Kp = 4;  //constant variable used for multiplying error
-//	int Ki = 1;  //constant variable used for multiplying integral
-//	int Kd = 2;  //constant variable used for multiplying derivative
+	int pos = 0;
+	int last_error = mean;
+	int targetpos = mean;  //out set target position
+	int integral = 0;
+	int derivative = 0;
+	int error = 0;
+	int CV = 0;
+	int Kp = 4;  //constant variable used for multiplying error
+	int Ki = 1;  //constant variable used for multiplying integral
+	int Kd = 2;  //constant variable used for multiplying derivative
 	
 	/*
 	 * Here is the end of our declarations for the PID control loop
@@ -255,40 +250,32 @@ void MainBalanceTask(void *pvParameters)
 		accY = -(accY - 1600);
 
 
+		//Balancing Code
 
-/*
-//		if (cent == TRUE)	//reset all values when motor is re-centered
+//		if (cent == TRUE)	//manually reset all values to re-center motors, for debugging
 //		{
+//			//Balance
 //			targetpos = 0;
 //			mean = calc_target();
-//			cent = FALSE;
 //			error = 0;
-//			limit = 0;
 //			CV = 0;
 //			integral = 0;
+//			poscounter = 0;
+//			//Steering
+//			steer_targetpos = 0;
+//			steer_initial = calc_target();
+//			steer_correcting = FALSE;
+//			waiting_for_balance = FALSE;
+//			steer_error = 0;
+//			steer_CV = 0;
+//			steer_integral = 0;
 //			LPC_QEI->QEICON |= 1;
+//
+//			center = TRUE;
+//			cent = FALSE;
 //		}
 //
-//
-//		if(LPC_QEI->QEIPOS > 40)
-//		{
-//			pos = (-80+LPC_QEI->QEIPOS); //Position is value from 0-80, translates this value to 0-40
-//		}
-//		else
-//		{
-//			pos = LPC_QEI->QEIPOS; //Retreive position
-//		}
-//		if(targetpos > 40)
-//		{
-//			error = pos - (80 - targetpos); //target position - current position
-//		}
-//		else if(targetpos < 40)
-//		{
-//			error = pos - targetpos; //target position - current position
-//		}
-
-//Balancing Code
-
+//		error = poscounter - targetpos;
 //		derivative = error - last_error; //derivative
 //		integral = integral + error;         //integral portion of the algorithm
 //		CV = (error * Kp) + (integral * Ki) + (derivative * Kd); //Control variable
@@ -303,42 +290,30 @@ void MainBalanceTask(void *pvParameters)
 //			CV = 50;	//Min speed
 //		}
 //
-//		if (accY <= mean-turnoffset && limit > -50)
+//		if (accY <= mean-turnoffset && pos > -5)
 //		{
 //			center = FALSE;
-//			limit = limit - 1;
-//			stepperTurnF(2, 0, 2, 11, steer_CV, 5);
+//			targetpos = accY/1000;
+//			if(targetpos <= -5)
+//			{
+//				targetpos = -5;
+//			}
 //		}
-//		else if (accY >= mean+turnoffset && limit < 50)
+//		else if (accY >= mean+turnoffset && pos < 5)
 //		{
 //			center = FALSE;
-//			limit = limit + 1;
-//			stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-//
+//			targetpos = accY/1000;
+//			if(targetpos >= 5)
+//			{
+//				targetpos = 5;
+//			}
 //		}
 //		else if ((mean-baloffset) < accY && accY < (mean+baloffset) && center == FALSE)
 //		{
 //			targetpos = 0;
-//			while (limit != 0)
-//			{
-//
-//				if (limit > 0)
-//				{
-//					limit = limit - 1;
-//					stepperTurnF(2, 0, 2, 11, steer_CV, 5);
-//					vTaskDelay(10);
-//				}
-//				else if (limit < 0)
-//				{
-//					limit = limit + 1;
-//					stepperTurnR(2, 0, 2, 11, steer_CV, 5);
-//					vTaskDelay(10);
-//				}
-//			}
 //			center = TRUE;
-//			vTaskDelay(10);
 //		}
-//		else if(steer_pos == steer_targetpos)
+//		else if(poscounter == targetpos)
 //		{
 //			error = 0;
 //			CV = 0;
@@ -347,27 +322,46 @@ void MainBalanceTask(void *pvParameters)
 //		}
 //		else
 //		{
-//			//do nothing
+//			//in-between state, do nothing
 //		}
 //		last_error = error;
-*/
+//
+//		if(targetpos < 0)
+//			{
+//				if(pos < targetpos)
+//				{
+//					stepperTurnR(2, 0, 2, 11, CV, 5);
+//				}
+//				else
+//				{
+//					stepperTurnF(2, 0, 2, 11, CV, 5);
+//				}
+//			}
+//			else if(targetpos > 0)
+//			{
+//				if(pos > targetpos)
+//				{
+//					stepperTurnF(2, 0, 2, 11, CV, 5);
+//				}
+//				else
+//				{
+//					stepperTurnR(2, 0, 2, 11, CV, 5);
+//				}
+//			}
+//			else
+//			{
+//				if(pos < 0)
+//				{
+//					stepperTurnR(2, 0, 2, 11, CV, 5);
+//				}
+//				else if (pos > 0)
+//				{
+//					stepperTurnF(2, 0, 2, 11, CV, 5);
+//				}
+//			}
+
 
 //		Steering code <--F R-->
-
-		if (cent == TRUE)	//reset all values when motor is re-centered
-		{
-			steer_targetpos = 0;
-			steer_initial = calc_target();
-			cent = FALSE;
-			steer_correcting = FALSE;
-			waiting_for_balance = FALSE;
-			steer_error = 0;
-			steer_CV = 0;
-			steer_integral = 0;
-			LPC_QEI->QEICON |= 1;
-		}
-
-
 
 		if(LPC_QEI->QEIPOS > 40)
 		{
@@ -984,28 +978,62 @@ int is_busy() {
 	return ((reg & (1 << 4)) >> 4);
 }
 
+
+
 void EINT3_IRQHandler()
 {
 	//Rising edge detect
 	if(LPC_GPIOINT->IO2IntStatR & (0x1<<10))
 	{
-		poscounter++;
+		if(first_fall == 'A')
+		{
+			poscounter++;
+			first_fall = 0;
+		}
+		else
+		{
+			poscounter--;
+		}
 		LPC_GPIOINT->IO2IntClr |= 0x1<<10;
 	}
 	else if(LPC_GPIOINT->IO2IntStatR & (0x1<<12))
 	{
-		poscounter--;
+		if(first_fall == 'B')
+		{
+			poscounter--;
+			first_fall = 0;
+		}
+		else
+		{
+			poscounter++;
+		}
 		LPC_GPIOINT->IO2IntClr |= 0x1<<12;
 	}
 	//Falling edge detect
 	else if(LPC_GPIOINT->IO2IntStatF & (0x1<<10))
 	{
-		poscounter++;
+		if(first_fall != 0)
+		{
+			poscounter--;
+		}
+		else
+		{
+			poscounter++;
+			first_fall == 'A';
+		}
 		LPC_GPIOINT->IO2IntClr |= 0x1<<10;
 	}
 	else if(LPC_GPIOINT->IO2IntStatF & (0x1<<10))
 	{
-		poscounter++;
+		if(first_fall != 0)
+		{
+			poscounter++;
+		}
+		else
+		{
+			poscounter--;
+			first_fall == 'B';
+		}
 		LPC_GPIOINT->IO2IntClr |= 0x1<<12;
 	}
 }
